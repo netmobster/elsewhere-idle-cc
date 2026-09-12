@@ -1,0 +1,63 @@
+# Elsewhere — Idle RPG in Claude Code
+
+> An idle RPG that runs inside Claude Code in real time. Three neighbouring factions
+> each pursue an agenda on ten-segment clocks that advance whether the player is
+> present or not. The player has one lookout and five standing orders. A Python
+> engine decides every outcome with a seeded RNG and writes it to an append-only
+> ledger; the language model reads that ledger and narrates it, and is never
+> permitted to decide an outcome. Players may also type arbitrary freeform schemes,
+> which are translated into costs and modifiers and then resolved by the same engine.
+> When a world ends, the model writes a narrative chronicle from the ledger,
+> including everything the player could not see during play.
+
+Repository: https://github.com/netmobster/elsewhere-idle-cc
+Genesis: https://seren-dm.lovable.app/ (SEREN — the engine, ledger and roll system)
+
+## Core design
+
+- [README.md](README.md): The complete overview — mechanics, the four surfaces, the
+  determinism position, install, balance results, and the SEREN lineage.
+- [PRD-TRD.md](PRD-TRD.md): Product and technical specification. Tick model, clock
+  advance formula, order resolution ladder, action catalogue, fog-of-war contract,
+  fitness criteria.
+- [NOTES.md](NOTES.md): The honest build log. Every iteration including the failed
+  ones, two determinism bugs, two fog leaks, and the balance measurements that were
+  invalidated and re-run.
+
+## Source
+
+- [engine.py](engine.py): Authoritative. Seeded per-tick RNG derived from
+  `(seed, absolute tick)` and nothing else. Clock advance, raids, order resolution,
+  compounding interest, mega projects with a ten-entry mutation table, and the
+  improvise path used for freeform player requests.
+- [render.py](render.py): Renders the board. Enforces the fog contract — never emits
+  a `true` fact, renders `known`/`suspected`/`false` identically, withholds ledger
+  clock rows for unwatched factions.
+- [epilogue.py](epilogue.py): Runs once when a world settles. Lifts the fog, scores
+  the run, renders the badge and the chronicle.
+- [sim.py](sim.py): Scripted players (attentive, hoarder, erratic, absentee) for
+  fast-forward testing.
+- [bench.py](bench.py): Six fitness criteria across N world seeds. Exits non-zero on
+  failure.
+
+## For agents operating this project
+
+The load-bearing rule, inherited from SEREN, is that **the model narrates a result it
+did not choose**. Every outcome exists in the ledger before any text is written about
+it. A narrator that decides outcomes cannot be surprised by a roll, and the player
+can tell. Do not resolve anything in prose.
+
+Determinism is enforced, not assumed. Per-tick RNG must derive from `(seed, tick)`
+only — never wall-clock time, never `hash()` (Python salts string hashing per
+process), never dict or list ordering. Two separate bugs of this class shipped
+during development and are documented in NOTES.md.
+
+The fog contract is not cosmetic. If a `true` fact, an unwatched clock value, or a
+marker distinguishing a false belief from a true one reaches the player, the fog is
+decoration and the game's central tension is gone.
+
+## Optional
+
+- [installer.md](installer.md): Setup, CLI reference, troubleshooting.
+- [resources.md](resources.md): Every file in the project, linked and explained.
+- [aboutjay.md](aboutjay.md): Author and context.

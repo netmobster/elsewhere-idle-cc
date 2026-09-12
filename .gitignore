@@ -1,0 +1,21 @@
+# Your world. Created on first run, personal to your save.
+state.json
+story.md
+elsewhere-board.html
+epilogue.html
+worlds/
+
+# Test output
+sims/
+__pycache__/
+*.pyc
+
+# Rollback copies and scratch from the build. Kept locally, not shipped.
+_patch.py
+engine.v0*.py
+render.v*.py
+report.py
+report.html
+elsewhere-report.html
+redteam.py
+REDTEAM.md

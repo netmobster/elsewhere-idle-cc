@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Elsewhere — an idle RPG that runs in Claude Code while you are gone</title>
+<meta name="description" content="An idle RPG that runs in Claude Code, in real time, whether you are there or not. Two minutes a day. Three neighbours who each want something. One set of eyes.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Spectral:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+/* Elsewhere — homepage, "Iron & Ember". Hour of the world on <html data-mode>. */
+:root{--bg:#0d0c0b;--panel:#171513;--ink:#e9e1d3;--mid:#a9a297;--soft:#6f6a62;--edge:#2a2622;--ember:#ff4d00;--ember2:#ff6a1a;--glow:rgba(255,77,0,.42);--caps:Cinzel,serif;--serif:Spectral,Georgia,serif;--mono:"JetBrains Mono",ui-monospace,monospace}
+[data-mode="morning"]{--bg:#1e2226;--panel:#262b30;--ink:#dfe3e6;--mid:#b4bcc4;--soft:#8a949c;--edge:#343a40;--ember:#9fb4c4;--ember2:#b9cad6;--glow:rgba(159,180,196,.28)}
+[data-mode="day"]{--bg:#181716;--panel:#211f1d;--ink:#e9e1d3;--mid:#b8b0a2;--soft:#8a847a;--edge:#2e2b27;--ember:#c9b99a;--ember2:#dccfb4;--glow:rgba(201,185,154,.22)}
+[data-mode="sunset"]{--bg:#1a0e07;--panel:#24140a;--ink:#f0e2d0;--mid:#c8a888;--soft:#b08060;--edge:#3a2212;--ember:#ff8a30;--ember2:#ffa75a;--glow:rgba(255,138,48,.42)}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--serif);font-weight:300;font-size:17px;line-height:1.55;transition:background .8s,color .8s}
+a{color:var(--ember);text-decoration:none;border-bottom:1px solid transparent}a:hover{color:var(--ink);border-bottom-color:var(--ember)}
+p{margin:0;text-wrap:pretty}
+b,strong{font-weight:400;color:var(--ink)}
+em{font-style:italic}
+code{font-family:var(--mono);font-size:.85em;color:var(--ink);background:var(--panel);padding:1px 6px;border:1px solid var(--edge)}
+.caps{font-family:var(--caps);font-weight:400}
+.label{font-family:var(--caps);font-size:9px;letter-spacing:.42em;color:var(--soft);text-transform:uppercase}
+.label.hot{color:var(--ember)}
+.num{font-variant-numeric:tabular-nums}
+.wrap{position:relative;z-index:1;max-width:1040px;margin:0 auto;padding:0 24px}
+section{padding:96px 0;border-top:1px solid var(--edge)}
+section.flush{border-top:0}
+h2{font-family:var(--caps);font-weight:400;font-size:clamp(24px,3.4vw,36px);letter-spacing:.06em;line-height:1.1;margin:0;text-wrap:balance}
+h3{font-family:var(--caps);font-weight:400;font-size:13px;letter-spacing:.2em;line-height:1.3;margin:0;color:var(--ink)}
+.lede{font-size:clamp(19px,2.2vw,23px);line-height:1.4;color:var(--ink)}
+.dim{color:var(--mid)}
+.head{display:flex;flex-direction:column;gap:14px;max-width:720px;margin-bottom:44px}
+.grid{display:grid;gap:1px;background:var(--edge);border:1px solid var(--edge)}
+.grid>*{background:var(--panel);padding:26px 26px 28px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.g3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.rule{border-left:2px solid var(--ember);padding:8px 0 8px 22px;display:flex;flex-direction:column;gap:10px}
+.rule .big{font-size:clamp(22px,2.8vw,30px);line-height:1.25;font-weight:300;color:var(--ink)}
+.quote{font-style:italic;font-size:clamp(18px,2.1vw,21px);line-height:1.4;color:var(--ink)}
+.roll{font-family:var(--mono);font-size:14px;display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline;padding:16px 20px;border:1px solid var(--edge);background:var(--panel)}
+.roll .d{color:var(--ember);font-size:22px;line-height:1}
+.roll .k{color:var(--soft);font-size:11px;letter-spacing:.2em;font-family:var(--caps)}
+.term{font-family:var(--mono);font-size:13px;line-height:1.75;color:var(--mid);background:var(--panel);border:1px solid var(--edge);padding:22px 24px;white-space:pre-wrap;overflow-wrap:anywhere}
+.brd{display:grid;grid-template-columns:auto auto 1fr auto auto;gap:6px 12px;align-items:center;font-family:var(--mono);font-size:12px;color:var(--mid)}
+.brd .h{color:var(--ink)}.brd .r{text-align:right}.brd .seg{margin:0;display:flex;min-width:60px}
+.brd .full{grid-column:1/-1}
+.term .h{color:var(--ink)} .term .e{color:var(--ember)} .term .s{color:var(--soft)}
+.seg{display:inline-flex;gap:3px;vertical-align:middle;margin:0 8px}
+.seg i{flex:1 1 0;min-width:6px;height:11px;background:var(--edge);display:inline-block}
+.seg i.on{background:var(--ember);box-shadow:0 0 8px var(--glow)}
+.seg i.fog{background:transparent;border:1px solid var(--edge);animation:fogseg 3.4s ease-in-out infinite}
+.seg i.fog:nth-child(2n){animation-delay:.6s}.seg i.fog:nth-child(3n){animation-delay:1.3s}
+.btn{display:inline-flex;align-items:center;gap:12px;white-space:nowrap;flex:none;font-family:var(--caps);font-size:11px;letter-spacing:.3em;padding:14px 22px;border:1px solid var(--ember);color:var(--ink);background:transparent;cursor:pointer;transition:background .2s,color .2s}
+.btn:hover{background:var(--ember);color:var(--bg);border-color:var(--ember)}
+.btn.solid{background:var(--ember);color:var(--bg)}.btn.solid:hover{background:var(--ember2)}
+.btn:focus-visible,.hours button:focus-visible,.tab:focus-visible{outline:2px solid var(--ember);outline-offset:3px}
+
+/* nav */
+nav{position:sticky;top:0;z-index:5;background:color-mix(in oklab,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--edge)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;height:64px}
+.logo{display:inline-flex;align-items:center;gap:10px;color:inherit;border:0}
+.logo:hover{border:0;color:inherit}
+.logo svg{width:32px;height:32px;flex:none}
+.logo .ring-dim{fill:none;stroke:var(--edge);stroke-width:5;stroke-dasharray:14.8 2.8}
+.logo .ring-lit{fill:none;stroke:var(--ember);stroke-width:5;stroke-dasharray:105 71;animation:ember 3s ease-in-out infinite}
+.logo .disc{fill:var(--ink)}.logo .bite{fill:var(--bg);transition:fill .8s}
+.logo .word{font-family:var(--caps);font-weight:600;letter-spacing:.18em;font-size:15px;line-height:1;display:block}
+.logo .sub{font-family:var(--caps);font-size:7.5px;letter-spacing:.42em;color:var(--ember);display:block;margin-top:3px}
+.navlinks{display:flex;gap:26px;align-items:center}
+.navlinks a{font-family:var(--caps);font-size:9.5px;letter-spacing:.3em;color:var(--mid)}
+.navlinks a:hover{color:var(--ink);border:0}
+@media(max-width:760px){.navlinks a.hide{display:none}}
+.hours{display:flex;align-items:center;gap:10px}
+.hours .now{font-family:var(--caps);font-size:9px;letter-spacing:.3em;color:var(--soft)}
+.hours .picker{display:flex;gap:8px;padding:5px 7px;border-radius:999px;border:1px solid var(--edge)}
+.hours button{width:18px;height:18px;border:0;padding:0;cursor:pointer;border-radius:999px;background:transparent;box-shadow:inset 0 0 0 1.5px var(--soft)}
+.hours button[aria-pressed="true"]{background:var(--ember);box-shadow:inset 0 0 0 1.5px var(--ember)}
+
+/* backdrop */
+.backdrop{position:fixed;inset:0;pointer-events:none;z-index:0}
+.backdrop .ground{position:absolute;inset:0;background:radial-gradient(ellipse 85% 42% at 50% 108%,var(--glow),transparent 70%);animation:breathe 9s ease-in-out infinite;transition:background .8s}
+[data-mode="morning"] .backdrop .ground{background:radial-gradient(ellipse 85% 42% at 50% -8%,var(--glow),transparent 70%)}
+.backdrop svg{position:absolute;inset:0;width:100%;height:100%;opacity:.3}
+.sun,.sunglow{transform-box:fill-box;transform-origin:center;transition:cx 1.2s,cy 1.2s,r 1.2s}
+.sun{fill:var(--ember2)}.sunglow{fill:var(--ember);opacity:.7}
+[data-mode="morning"] .sun{cx:140px;cy:300px;r:66px;animation:sunpulse 6s ease-in-out infinite}
+[data-mode="morning"] .sunglow{cx:140px;cy:300px;r:150px;animation:sunpulse 6s ease-in-out infinite}
+[data-mode="day"] .sun{cx:400px;cy:110px;r:58px;animation:breathe 12s ease-in-out infinite}
+[data-mode="day"] .sunglow{cx:400px;cy:110px;r:300px;opacity:.55;animation:breathe 12s ease-in-out infinite}
+[data-mode="sunset"] .sun{cx:660px;cy:560px;r:96px;animation:sunpulse 5s ease-in-out infinite}
+[data-mode="sunset"] .sunglow{cx:660px;cy:560px;r:230px;animation:sunpulse 5s ease-in-out infinite}
+[data-mode="night"] .sun,html:not([data-mode]) .sun{cx:620px;cy:150px;r:48px;fill:var(--ink);animation:breathe 14s ease-in-out infinite}
+[data-mode="night"] .sunglow,html:not([data-mode]) .sunglow{cx:620px;cy:150px;r:110px;animation:breathe 14s ease-in-out infinite}
+.spark{fill:var(--ember2);animation:rise var(--dur) linear var(--delay) infinite}
+[data-mode="morning"] .spark{animation-direction:reverse}
+.wall{fill:var(--bg);opacity:.9;transition:fill .8s}.wall-edge{fill:none;stroke:var(--ember);stroke-width:1.2;opacity:.6}
+
+/* hero */
+.hero{padding:110px 0 90px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:56px;align-items:center}
+@media(max-width:960px){.hero{grid-template-columns:1fr;padding-top:64px}}
+.hero .copy{display:flex;flex-direction:column;gap:26px}
+.hero h1{font-family:var(--caps);font-weight:400;font-size:clamp(56px,9vw,112px);letter-spacing:.08em;line-height:.95;margin:0}
+.hero .tag{font-size:clamp(20px,2.4vw,26px);line-height:1.35;color:var(--ink)}
+.hero .ctas{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.hero .fine{font-style:italic;color:var(--soft);font-size:15px}
+.board{position:relative}
+.board .term{font-size:12.5px;padding:24px 26px;box-shadow:0 40px 120px rgba(0,0,0,.55)}
+.board .cap{position:absolute;right:16px;top:-11px;background:var(--bg);padding:0 10px;white-space:nowrap}
+
+/* fog callout */
+.fogline{display:flex;flex-direction:column;align-items:center;text-align:center;gap:18px;padding:80px 0}
+.fogline .big{font-size:clamp(26px,4vw,44px);line-height:1.2;font-weight:300;color:var(--ink);max-width:760px;text-wrap:balance}
+.fogline .big b{color:var(--ember);font-weight:400}
+
+/* visibility table */
+.vis{display:grid;grid-template-columns:auto 1fr 1fr;gap:1px;background:var(--edge);border:1px solid var(--edge)}
+.vis>*{background:var(--panel);padding:14px 18px;min-width:0}
+.vis .hd{font-family:var(--caps);font-size:9px;letter-spacing:.34em;color:var(--soft)}
+.vis code{background:transparent;border:0;padding:0;color:var(--ember);font-size:15px}
+.vis .false code{color:var(--ink)}
+.vis .false{box-shadow:inset 3px 0 0 var(--ember)}
+@media(max-width:560px){.vis{grid-template-columns:auto 1fr}.vis .c3{display:none}}
+
+/* epilogue */
+.epi{display:grid;grid-template-columns:380px minmax(0,1fr);gap:64px;align-items:start}
+@media(max-width:900px){.epi{grid-template-columns:1fr}.badge{margin:0 auto}}
+.badge{position:relative;width:340px;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;isolation:isolate;position:sticky;top:96px}
+.badge .halo{position:absolute;left:50%;top:150px;width:520px;height:520px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,var(--glow),transparent 62%);opacity:.7;animation:breathe 7s ease-in-out infinite;pointer-events:none;z-index:-1}
+.ring{width:300px;height:300px;position:relative}
+.ring svg{width:100%;height:100%;overflow:visible}
+.ticks{fill:none;stroke:var(--edge);stroke-width:1;stroke-dasharray:1.2 8.8;transform-box:fill-box;transform-origin:center;animation:turn 140s linear infinite}
+.ticks2{fill:none;stroke:var(--soft);stroke-width:1;stroke-dasharray:6 194;opacity:.6;transform-box:fill-box;transform-origin:center;animation:turn 90s linear infinite reverse}
+.track{fill:none;stroke:var(--edge);stroke-width:12}
+.fill{fill:none;stroke:var(--ember);stroke-width:12;stroke-dasharray:0 1000;transition:stroke-dasharray 2.4s cubic-bezier(.2,.7,.2,1);filter:drop-shadow(0 0 8px var(--glow))}
+.gaps{fill:none;stroke:var(--bg);stroke-width:16;stroke-dasharray:3 97;transition:stroke .8s}
+.tip{fill:var(--ember2);animation:ember 1.6s ease-in-out infinite;filter:drop-shadow(0 0 6px var(--ember))}
+.bdisc{fill:var(--panel);stroke:var(--edge);stroke-width:1}
+.bsun{fill:var(--ember2);transform-box:fill-box;transform-origin:center;transition:cx 1.2s,cy 1.2s}
+.bsunglow{fill:var(--ember);opacity:.8;transition:cx 1.2s,cy 1.2s}
+[data-mode="night"] .bsun,html:not([data-mode]) .bsun{fill:var(--ink)}
+[data-mode="morning"] .bsun,[data-mode="sunset"] .bsun{animation:sunpulse 4s ease-in-out infinite}
+.score{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.score b{font-family:var(--caps);font-weight:400;font-size:86px;line-height:1;letter-spacing:.02em;color:var(--ink);text-shadow:0 0 30px var(--glow)}
+.score span{font-family:var(--caps);font-size:9px;letter-spacing:.42em;color:var(--ember)}
+.bmeta{display:flex;gap:8px 12px;justify-content:center;flex-wrap:wrap;font-family:var(--caps);font-size:8.5px;letter-spacing:.3em;color:var(--soft)}
+.held{display:flex;gap:4px;align-items:center}
+.held i{width:9px;height:9px;transform:rotate(45deg);border:1px solid var(--soft)}
+.held i.on{background:var(--ember);border-color:var(--ember)}
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--edge);margin-bottom:34px}
+.tab{font-family:var(--caps);font-size:10px;letter-spacing:.3em;padding:12px 18px;white-space:nowrap;flex:none;background:transparent;border:0;border-bottom:2px solid transparent;color:var(--soft);cursor:pointer;margin-bottom:-1px}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ember)}
+.panel[hidden]{display:none}
+.chron{display:flex;flex-direction:column;gap:22px;max-width:640px}
+.chron h3{color:var(--ember);margin-top:22px}
+.chron p{font-size:17.5px;line-height:1.6;color:var(--mid)}
+.chron p.first{font-size:20px;color:var(--ink)}
+.chron .by{font-style:italic;color:var(--soft)}
+.scoreline{font-family:var(--mono);font-size:15px;line-height:1.8;color:var(--ink);padding:26px 28px;border:1px solid var(--edge);background:var(--panel)}
+.scoreline .e{color:var(--ember)}
+
+/* bench */
+.bench{display:grid;grid-template-columns:auto 1fr auto auto;gap:0 22px;font-family:var(--mono);font-size:14px;color:var(--mid);align-items:center}
+.bench>*{padding:12px 0;border-top:1px solid var(--edge)}
+.bench .who{font-family:var(--caps);font-size:11px;letter-spacing:.2em;color:var(--ink)}
+.bench .bar{height:8px;background:var(--edge);position:relative}
+.bench .bar i{position:absolute;inset:0;right:auto;background:var(--ember);box-shadow:0 0 8px var(--glow)}
+.bench .sc{color:var(--ink)}
+@media(max-width:560px){.bench{grid-template-columns:auto 1fr auto}.bench .days{display:none}}
+
+/* files */
+.files{display:grid;grid-template-columns:auto 1fr;gap:0 24px}
+.files>*{padding:11px 0;border-top:1px solid var(--edge);font-size:15px;color:var(--mid)}
+.files code{background:transparent;border:0;padding:0;color:var(--ember);font-size:14px}
+footer{padding:64px 0 90px;border-top:1px solid var(--edge);color:var(--soft);font-size:14px;display:flex;flex-direction:column;gap:22px}
+footer .it{font-style:italic}
+
+@keyframes turn{to{transform:rotate(360deg)}}
+@keyframes breathe{0%,100%{opacity:.7}50%{opacity:1}}
+@keyframes sunpulse{0%,100%{opacity:.75;transform:scale(1)}50%{opacity:1;transform:scale(1.07)}}
+@keyframes rise{0%{transform:translate(0,0);opacity:0}15%{opacity:1}100%{transform:translate(18px,-260px);opacity:0}}
+@keyframes ember{0%,100%{opacity:.55}50%{opacity:1}}
+@keyframes fogseg{0%,100%{opacity:.3}50%{opacity:.8}}
+@keyframes reveal{to{opacity:1;transform:none}}
+.in{opacity:0;transform:translateY(14px);transition:opacity .9s ease,transform .9s ease}
+.in.on{opacity:1;transform:none}
+</style>
+</head>
+<body>
+
+<div class="backdrop" aria-hidden="true">
+  <div class="ground"></div>
+  <svg viewBox="0 0 800 1000" preserveAspectRatio="xMidYMax slice">
+    <defs><filter id="sunblur" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="40"/></filter></defs>
+    <circle class="sunglow" filter="url(#sunblur)"/>
+    <circle class="sun"/>
+    <g id="sparks"></g>
+    <path class="wall" d="M0 1000 L0 900 L40 900 L40 880 L70 880 L70 900 L120 900 L120 870 L150 870 L150 900 L230 900 L230 885 L260 885 L260 900 L340 900 L340 860 L370 860 L370 900 L470 900 L470 880 L500 880 L500 900 L580 900 L580 870 L610 870 L610 900 L700 900 L700 885 L730 885 L730 900 L800 900 L800 1000 Z"/>
+    <path class="wall-edge" d="M0 1000 L0 900 L40 900 L40 880 L70 880 L70 900 L120 900 L120 870 L150 870 L150 900 L230 900 L230 885 L260 885 L260 900 L340 900 L340 860 L370 860 L370 900 L470 900 L470 880 L500 880 L500 900 L580 900 L580 870 L610 870 L610 900 L700 900 L700 885 L730 885 L730 900 L800 900"/>
+  </svg>
+</div>
+
+<nav>
+  <div class="wrap">
+    <a class="logo" href="#top" aria-label="Elsewhere Idle CC">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><circle class="ring-dim" cx="32" cy="32" r="28" transform="rotate(-90 32 32)"/><circle class="ring-lit" cx="32" cy="32" r="28" transform="rotate(-90 32 32)"/><circle class="disc" cx="32" cy="32" r="16"/><circle class="bite" cx="41" cy="26" r="16"/></svg>
+      <span><span class="word">ELSEWHERE</span><span class="sub">IDLE CC</span></span>
+    </a>
+    <div class="navlinks">
+      <a class="hide" href="#how">HOW</a><a class="hide" href="#fog">FOG</a><a class="hide" href="#epilogue">EPILOGUE</a><a class="hide" href="#install">INSTALL</a>
+      <a href="https://github.com/netmobster/elsewhere-idle-cc">GITHUB</a>
+      <div class="hours"><span class="now" id="hour-word">NIGHT</span>
+        <div class="picker" role="group" aria-label="Hour of the world">
+          <button data-mode="morning" aria-label="morning" title="morning"></button><button data-mode="day" aria-label="day" title="day"></button><button data-mode="sunset" aria-label="sunset" title="sunset"></button><button data-mode="night" aria-label="night" title="night"></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<main id="top" class="wrap">
+
+  <header class="hero">
+    <div class="copy">
+      <span class="label hot">AN IDLE RPG FOR CLAUDE CODE</span>
+      <h1>ELSE<br>WHERE</h1>
+      <p class="tag">An idle RPG that runs in Claude Code, in real time, whether you are there or not.</p>
+      <p class="dim">Two minutes a day. Three neighbours who each want something. One set of eyes, and three directions to point it.</p>
+      <div class="ctas">
+        <a class="btn solid" href="#install">CLONE &amp; PLAY</a>
+        <a class="btn" href="#epilogue">READ A LOSS</a>
+      </div>
+      <p class="fine">You will lose. The interesting part is finding out <em>how</em> — because the story of what happened while you were looking the other way is written for you at the end.</p>
+    </div>
+    <div class="board">
+      <span class="cap label">THE BOARD</span>
+<div class="term brd" style="font-size:12px;padding:22px 24px;box-shadow:0 40px 120px rgba(0,0,0,.55)">
+  <div class="full h" style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px"><span>OSSEN'S REACH — the dawn watch</span><span class="s">124 coin · 10 hands · queue 0/5</span></div>
+  <span class="h">THE SUNDERED CHARTER</span><span class="s">builders</span><span class="seg"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></span><span class="r h">8/10</span><span class="e">EYES ON</span>
+  <span class="h">THE LONG HAND</span><span class="s">diggers</span><span class="seg"><i class="fog"></i><i class="fog"></i><i class="fog"></i><i class="fog"></i><i class="fog"></i><i class="fog"></i><i class="fog"></i><i class="fog"></i><i class="fog"></i><i class="fog"></i></span><span class="r">?</span><span class="s">no eyes</span>
+  <span class="h">THE NINTH WATCH</span><span class="s">raiders</span><span class="seg"><i class="fog"></i><i class="fog"></i><i class="fog"></i><i class="fog"></i><i class="fog"></i><i class="fog"></i><i class="fog"></i><i class="fog"></i><i class="fog"></i><i class="fog"></i></span><span class="r">?</span><span class="s">no eyes</span>
+  <span class="full e" style="margin-top:14px">WHAT IS COMING</span>
+  <span class="full h">The Sundered Charter is about a day away.</span>
+  <span class="full">They want to raise a second wall across the reach.</span>
+</div>
+    </div>
+  </header>
+
+  <div class="fogline in">
+    <p class="big">Those fogged bars are not zero. <b>They are unknown.</b></p>
+    <p class="dim lede">That distinction is the whole game.</p>
+  </div>
+
+  <section id="how">
+    <div class="head in"><span class="label hot">THE ONE-MINUTE VERSION</span>
+      <h2>You run a small holding.</h2>
+      <p class="lede dim">Three neighbours are each working toward something that will change the world permanently when they finish. Each has a bar of ten segments.</p>
+    </div>
+    <div class="grid g3 in">
+      <div><span class="label hot">I</span><h3>THE BARS FILL IN REAL TIME</h3><p class="dim">Not while the app is open. <b>In real time.</b> Close the laptop, come back tomorrow, and two days of world have happened without you.</p></div>
+      <div><span class="label hot">II</span><h3>YOU HAVE ONE LOOKOUT</h3><p class="dim">Point it at a neighbour and you see their real number, they work slower, and they will not rob you. The other two go dark. Point it at all three from the hill instead and you get a vague band on everyone and no protection at all.</p></div>
+      <div><span class="label hot">III</span><h3>YOU LEAVE STANDING ORDERS</h3><p class="dim">Up to five, one fires every eight hours. Then you go away.</p></div>
+    </div>
+    <div class="rule in" style="margin-top:56px;max-width:760px">
+      <span class="label hot">THE CATCH, AND IT IS THE ENTIRE DESIGN</span>
+      <p class="big">An order happens when it comes up, not when you wrote it.</p>
+      <p class="dim">You paid for a shipment from a dock you never finished buying. The dock changed hands on Tuesday. Your grain went to the village at whatever they'd pay. They were delighted.</p>
+    </div>
+  </section>
+
+  <section id="freeform">
+    <div class="head in"><span class="label hot">BUT THE REAL REASON TO PLAY</span>
+      <h2>The five orders are a shortcut, not the rules.</h2>
+      <p class="lede dim">You can type anything you can describe, and it becomes a real order with a real price and a real roll.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:40px 56px" class="in">
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <p class="quote">“Send every worker to convert the Sundered Charter to our religion — pitch that our God is a God of community and common interest.”</p>
+        <p class="dim">That happened. Here is what the engine did with it:</p>
+        <div class="roll num"><span><span class="k">d6 </span><span class="d">2</span></span><span><span class="k">+ receptive </span><span class="d">3</span></span><span><span class="k">− overreach </span><span class="d">1</span></span><span><span class="k">= </span><span class="d">4</span></span><span style="margin-left:auto"><span class="k">needed </span><span class="d">5</span></span></div>
+        <p class="dim">Their openness of 6 made them genuinely receptive (+3). Committing <em>every single worker</em> triggered an overreach penalty (−1). The die came up 2. <b>One short.</b> The missionaries walked home wet and unconverted and the holding had no labour left.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:20px">
+        <p class="quote">“Have one hand go to each neighbour, knock on the front door then pretend to collapse dead, upon being admitted for treatment attempt to steal gold from the market and run back to town, hopefully not dying too much.”</p>
+        <p class="dim">All three doors opened. All three collapses were believed. <b>135 coin</b>, stolen by three people pretending to die, because every neighbour in that particular world rolled maximum openness and generosity was the only exploitable thing in it.</p>
+        <p class="lede">Nobody designed that move. Nobody designed that exploit. It was in the numbers.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="surfaces">
+    <div class="head in"><span class="label hot">FOUR SURFACES, FOUR JOBS</span><h2>The first three are a UI. The fourth is why this needs an agent.</h2></div>
+    <div class="grid g4 in">
+      <div><h3>THE BOARD</h3><p class="dim"><b>Does:</b> State. Exactly what is true, rolled by the engine, arithmetic showing.</p><p class="dim"><b>Never:</b> Interpret. Advise. Invent.</p></div>
+      <div><h3>THE CHAT</h3><p class="dim"><b>Does:</b> Intelligence. Reads the ledger and tells you what it means.</p><p class="dim"><b>Never:</b> Decide outcomes. Contradict a roll.</p></div>
+      <div><h3>THE MODAL</h3><p class="dim"><b>Does:</b> Options. The turn in three clicks with real costs attached.</p><p class="dim"><b>Never:</b> Be the only way to play.</p></div>
+      <div style="box-shadow:inset 0 2px 0 var(--ember)"><h3 style="color:var(--ember)">FREEFORM</h3><p class="dim"><b>Does:</b> Anything not on the menu. You ask; the world answers.</p><p class="dim"><b>Never:</b> Break the engine.</p></div>
+    </div>
+  </section>
+
+  <section id="engine">
+    <div class="head in"><span class="label hot">HOW IT ACTUALLY WORKS</span>
+      <h2>Python rules. The model narrates.</h2>
+      <p class="lede dim">They are not the same job and they never swap.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:40px 56px" class="in">
+      <div style="display:flex;flex-direction:column;gap:18px">
+        <p class="dim">Every outcome in the game — every clock tick, every raid, every order, every absurd improvised scheme — is decided by <code>engine.py</code> with a seeded RNG and written to an append-only ledger with its arithmetic showing. Click any row on the board and you get <em>what you ordered · what had changed · what it rolled · what that means · net cost.</em></p>
+        <p class="dim">The model's job is to read that ledger and tell you what it means, in the register <em>you</em> brought to it. It translates your chaos into costs and modifiers. It does not get a vote on whether your chaos worked.</p>
+        <p class="dim">Determinism is enforced, not hoped for: per-tick RNG derives from <code>(seed, tick)</code> and nothing else. No clock, no dict ordering, no wall time. Same seed plus same elapsed time reproduces a world exactly, on any machine, forever.</p>
+      </div>
+      <div class="rule">
+        <p class="big">When a roll surprises the narrator, that surprise is genuine — and it is the strongest evidence you have that the dice are real.</p>
+        <p class="dim">A narrator that decided outcomes could not be surprised, and you would be able to tell.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="fog">
+    <div class="head in"><span class="label hot">FOG IS NOT DECORATION</span>
+      <h2>Four visibility values.</h2>
+      <p class="lede dim">Borrowed wholesale from <a href="https://seren-dm.lovable.app/">SEREN</a>.</p>
+    </div>
+    <div class="vis in">
+      <span class="hd"></span><span class="hd">THE WORLD</span><span class="hd c3">YOU</span>
+      <span><code>true</code></span><span class="dim">it is so</span><span class="c3"><b>have not learned it</b></span>
+      <span><code>known</code></span><span class="dim">it is so</span><span class="c3 dim">know it</span>
+      <span><code>suspected</code></span><span class="dim">it is so</span><span class="c3 dim">suspect, unconfirmed</span>
+      <span class="false"><code>false</code></span><span class="false dim">it is <b>not</b> so</span><span class="false c3 dim">believe it anyway</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px 56px;margin-top:40px" class="in">
+      <p class="lede"><code>false</code> is the one the design exists to keep. <b>A player who is confidently wrong is the most playable state in the game</b>, and the board will never tell you which of your beliefs is the wrong one.</p>
+      <p class="dim">The renderer never emits a <code>true</code> fact. Ledger rows for neighbours you weren't watching are withheld. An unwatched bar shows fog, never a number. If any of that leaks, the fog is just a graphic.</p>
+    </div>
+  </section>
+
+  <section id="epilogue">
+    <div class="head in"><span class="label hot">AND THEN YOU FIND OUT</span>
+      <h2>When a neighbour completes their agenda, the world settles and the fog lifts.</h2>
+      <p class="lede dim">The epilogue fires automatically: a badge with your score, and a chronicle — a real narrative history of your holding, written from the ledger, including every single thing you never saw. This is the payoff, and it is why losing feels good.</p>
+    </div>
+    <div class="epi">
+      <div class="badge" data-score="842" data-max="1000" data-held="2" data-fronts="3">
+        <div class="halo" aria-hidden="true"></div>
+        <div class="ring">
+          <svg viewBox="0 0 300 300" aria-hidden="true">
+            <defs><filter id="bblur" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="14"/></filter></defs>
+            <circle class="ticks" cx="150" cy="150" r="146"/><circle class="ticks2" cx="150" cy="150" r="138"/>
+            <circle class="track" cx="150" cy="150" r="118" pathLength="1000"/>
+            <circle class="fill" id="fill" cx="150" cy="150" r="118" pathLength="1000" transform="rotate(-90 150 150)"/>
+            <circle class="gaps" cx="150" cy="150" r="118" pathLength="1000" transform="rotate(-90.55 150 150)"/>
+            <circle class="bdisc" cx="150" cy="150" r="98"/>
+            <circle class="bsunglow" id="bsunglow" r="26" filter="url(#bblur)"/><circle class="bsun" id="bsun" r="9"/>
+            <circle class="tip" id="tip" r="4"/>
+          </svg>
+          <div class="score"><b id="num" class="num">0</b><span>OF 1000</span></div>
+        </div>
+        <span class="label hot" style="font-size:11px">RECORDED</span>
+        <div class="bmeta"><span>OSSEN'S REACH</span><span>·</span><span>SEED 774099567</span><span>·</span><span>7 DAYS</span><span>·</span><span class="held" id="held" aria-label="2 of 3 denied"></span></div>
+        <p class="quote" style="font-size:17px;max-width:300px">A clerk wrote you down. That is not nothing.</p>
+      </div>
+      <div>
+        <div class="tabs" role="tablist">
+          <button class="tab" role="tab" aria-selected="true" aria-controls="p-chron" id="t-chron">THE CHRONICLE</button>
+          <button class="tab" role="tab" aria-selected="false" aria-controls="p-score" id="t-score">THE SCORE LINE</button>
+        </div>
+        <div class="panel chron" id="p-chron" role="tabpanel" aria-labelledby="t-chron">
+          <h2 style="font-size:clamp(22px,2.6vw,30px)">The Chronicle of Ossen's Reach</h2>
+          <p class="by">Written afterward, from the ledger, by someone who could see all of it.</p>
+          <p class="first">There was a lord of Ossen's Reach who spent seven days trying to stop three neighbours from getting what they wanted, and who succeeded at two of them, which is better than anyone had any right to expect and worse than they could live with.</p>
+          <p>They arrived with two hundred coin, four pairs of hands, and a view of the valley that showed them exactly one thing at a time.</p>
+          <h3>THE FIRST MISTAKE WAS A GOOD DECISION</h3>
+          <p>They looked at the Sundered Charter — builders, quick, ambitious, wanting a second wall across the reach — and decided that the fastest neighbour was the dangerous one. It was a reasonable read. It was also the read the world was hoping for.</p>
+          <p>Sixty coin bought a brake. Two hands went with it. For five days the Charter did not move a single segment, and every time the lord looked, the ledger agreed with them: rolled a six, went nowhere. There is no feedback in the world more satisfying than watching a thing you paid for continue to work.</p>
+          <p>While they watched it, the Long Hand — diggers, unremarkable, third on every list — went from nothing to eight.</p>
+          <p>Eight segments, gained entirely in the dark. Nobody was ever looking.</p>
+          <h3>WHAT THE LORD COULD NOT SEE</h3>
+          <p>Here is the part they never got to read.</p>
+          <p>The valley gained twenty segments while unobserved. Six went to the Sundered Charter, in bursts, on the days the brake lapsed. Six went to the Ninth Watch — the slow ones, the raiders, the neighbour every sensible person wrote off — who crept from two to six across four days in which not one person from the Reach turned to face them.</p>
+          <p>And eight went to the Long Hand, who wanted only to reach whatever the old company had stopped digging for, and who were never slowed, never watched, and never threatened until the day they were already at seven.</p>
+          <p class="first">The lord did not lose because they were careless. They lost because their attention was a single lantern in a valley with three rooms, and the world quietly arranged for the thing that mattered to happen in whichever room the light was not.</p>
+          <h3>THE MISSION</h3>
+          <p>On the fifth day, with twenty-two coin left and every clock closing, the lord did something nobody had planned for.</p>
+          <p>They sent every worker they had — eight and a half pairs of hands, the entire labouring population of the Reach — to the gates of the Sundered Charter, to preach a god of community and common interest to a people whose whole theology was a wall.</p>
+          <p>It was not a stupid idea. The Charter were open — as open as anyone in that valley, which is to say completely. The pitch was good. The target was correct.</p>
+          <p>They rolled a two.</p>
+          <p>Three points of receptiveness, minus one for sending literally everyone, against a threshold of five. Four. One short. The missionaries came home, wet and unconverted, and the Reach had no labour left at all.</p>
+          <p>That was also the day the first brake expired. The Charter, freed and unwatched, began to move for the first time in five days.</p>
+          <h3>THE DYING TRAVELLERS</h3>
+          <p>The lord's reply to losing everything was to lose it more creatively.</p>
+          <p>Three workers were sent out, one to each neighbour, to knock on the front gate and collapse. Not fight. Not negotiate. Collapse — and be carried inside by people too decent to leave a stranger dying at the threshold, and then, while being treated, rob the market and run home.</p>
+          <p>All three doors opened. All three collapses were believed. All three thieves came back alive with forty-five coin apiece.</p>
+          <p>The generosity of that valley — every neighbour rated maximally open, every one of them willing to take in a stranger — was the only exploitable thing in the entire world, and the lord of Ossen's Reach found it on the day they had nothing left to lose.</p>
+          <p>One hundred and thirty-five coin, taken by three people pretending to die.</p>
+          <p>And while they were away doing it, the Ninth Watch walked into the Reach and took sixty-nine of it straight back out.</p>
+          <p>And the Long Hand, at eight, unwatched for two days, reached ten.</p>
+          <h3>HOW IT STANDS</h3>
+          <p>The Long Hand got what they wanted. Whatever the old company stopped digging for is theirs now, and the whole valley knows, because that is not the sort of thing anyone can keep quiet.</p>
+          <p>The Sundered Charter did not. They ended at eight, two short, on a wall that will now never be finished by them.</p>
+          <p>The Ninth Watch did not. They ended at six, having spent their entire campaign being slowed by a lord who could rarely see them and who braked them anyway.</p>
+          <p>Two of three denied. In a valley where all three moved faster than the Reach could afford to stop, the lord of Ossen's Reach held two agendas short of completion for seven days on a purse that twice went nearly to zero.</p>
+          <p>They finished richer than they started, at full labour, with the walls up.</p>
+          <p>They also finished having watched the wrong room three separate times, which is the only way this game is ever lost, and the only way it has ever been played.</p>
+          <p class="first">Ossen's Reach stands. It is not clear for how long, and it is not clear that anyone there minds.</p>
+        </div>
+        <div class="panel" id="p-score" role="tabpanel" aria-labelledby="t-score" hidden>
+          <div class="scoreline">Elsewhere — Ossen's Reach, seed 774099567. 7 days. 2/3 neighbours denied. Score 842 — <span class="e">RECORDED</span>.</div>
+          <p class="dim" style="margin-top:18px;font-size:15px">The raw line, as the engine wrote it. Same seed plus same elapsed time reproduces this world exactly, on any machine, forever.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="balance">
+    <div class="head in"><span class="label hot">IS IT BALANCED?</span>
+      <h2>Attention is worth about four times an absentee's score.</h2>
+      <p class="lede dim"><code>python bench.py 12</code> runs four strategies across twelve worlds and reports against six criteria. Current:</p>
+    </div>
+    <div class="bench num in" style="max-width:760px">
+      <span class="who">ATTENTIVE</span><span class="bar"><i style="width:100%"></i></span><span class="sc">941</span><span class="days">14.5 days · lost a front in 10 of 12</span>
+      <span class="who">HOARDER</span><span class="bar"><i style="width:68.4%"></i></span><span class="sc">644</span><span class="days">8.3 days · beat careful play in 3 of 12</span>
+      <span class="who">ERRATIC</span><span class="bar"><i style="width:30.1%"></i></span><span class="sc">283</span><span class="days">6.6 days</span>
+      <span class="who">ABSENTEE</span><span class="bar"><i style="width:29.1%"></i></span><span class="sc">274</span><span class="days">6.2 days</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px 56px;margin-top:40px;max-width:900px" class="in">
+      <p class="dim">Attention is worth about three and a half times an absentee&rsquo;s score &mdash; and it still loses you a neighbour in five worlds out of six. A game the attentive player always won would be as broken as one they always lost. <span class="label hot" style="margin-left:8px">PASS 6/6</span></p>
+      <p class="dim">The hoarder is the interesting one: it loses on average and <b>beats careful play two times in five.</b> That's the gamble, and it's deliberate.</p>
+    </div>
+  </section>
+
+  <section id="install">
+    <div class="head in"><span class="label hot">INSTALL</span>
+      <h2>There is no installer. Clone it and ask Claude Code to play.</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:32px 56px" class="in">
+      <div style="display:flex;flex-direction:column;gap:18px">
+<div class="term"><span class="s">$</span> git clone https://github.com/netmobster/elsewhere-idle-cc
+<span class="s">$</span> cd elsewhere-idle-cc</div>
+        <p class="dim">Then, in Claude Code:</p>
+<div class="term"><span class="e">/elsewhere</span></div>
+        <p class="dim">It rolls you a world, renders the board, and takes your first orders. The <code>/elsewhere</code> command ships inside the repo, so cloning installs it.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:18px">
+        <p class="dim"><b>Requirements:</b> Python 3.9+. No packages, no build step, no server, no account.</p>
+        <p class="dim"><b>The board is a plain HTML file on disk</b> — <code>elsewhere-board.html</code>, double-clickable. If your plan supports Claude Code Artifacts it'll publish to a live pane that updates each turn, which is nicer. That's an upgrade, not a requirement.</p>
+        <div class="files">
+          <code>engine.py</code><span>Truth. Every outcome in the game is decided here.</span>
+          <code>render.py</code><span>The board. Renders your file on the world, never the world.</span>
+          <code>sim.py</code><span>Fast-forward. Scripted players so a fortnight runs in a second.</span>
+          <code>bench.py</code><span>The judge. Six fitness criteria across twelve seeds.</span>
+          <code>NOTES.md</code><span>The build log, including everything that broke.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div style="display:flex;flex-direction:column;gap:8px;max-width:720px">
+      <span class="label">GENESIS</span>
+      <p>The engine, the ledger and the roll system descend from <a href="https://seren-dm.lovable.app/">SEREN</a> — a single-player AI dungeon master whose own description is <em>"files and the shell keep the numbers honest."</em> SEREN is the immersive one — an evening, a campaign, a world you live in. Elsewhere is pick up and play. Same engineering honesty, different cadence.</p>
+    </div>
+    <p class="it">Built in Claude Code, over about a week, mostly at night. The worst decisions are all documented.</p>
+    <p><a href="https://github.com/netmobster/elsewhere-idle-cc">github.com/netmobster/elsewhere-idle-cc</a> · <a href="https://github.com/netmobster/elsewhere-idle-cc/blob/main/LICENSE">Licence</a></p>
+  </footer>
+</main>
+
+<script>
+(function(){
+  var html = document.documentElement;
+  function autoMode(){ var h=new Date().getHours(); return h>=5&&h<10?'morning':h>=10&&h<17?'day':h>=17&&h<21?'sunset':'night'; }
+  var badge = document.querySelector('.badge');
+  function placeSun(mode){
+    var deg = {morning:180,day:270,sunset:0,night:60}[mode]*Math.PI/180, R=146;
+    var x=150+R*Math.cos(deg), y=150+R*Math.sin(deg);
+    ['bsun','bsunglow'].forEach(function(id){var e=document.getElementById(id);e.setAttribute('cx',x);e.setAttribute('cy',y);});
+  }
+  function setMode(m){
+    html.dataset.mode=m; document.getElementById('hour-word').textContent=m.toUpperCase();
+    document.querySelectorAll('.hours button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.mode===m));});
+    placeSun(m);
+  }
+  document.querySelectorAll('.hours button').forEach(function(b){b.addEventListener('click',function(){setMode(b.dataset.mode);});});
+  setMode(autoMode());
+
+  // sparks
+  var g=document.getElementById('sparks'),NS='http://www.w3.org/2000/svg';
+  function rnd(i,m){return ((i*9301+49297)%233280)/233280*m;}
+  for(var i=0;i<26;i++){var c=document.createElementNS(NS,'circle');c.setAttribute('class','spark');c.setAttribute('cx',rnd(i+11,800));c.setAttribute('cy',980+rnd(i,40));c.setAttribute('r',0.9+rnd(i+5,1.6));c.style.setProperty('--dur',(9+rnd(i,10))+'s');c.style.setProperty('--delay',(-rnd(i+3,18))+'s');g.appendChild(c);}
+
+  // reveal on scroll
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('on');io.unobserve(e.target);}});},{threshold:.15});
+  document.querySelectorAll('.in').forEach(function(el){io.observe(el);});
+
+  // badge: fill + count when it comes into view
+  var score=+badge.dataset.score,max=+badge.dataset.max,frac=Math.min(1,score/max),done=false;
+  var held=document.getElementById('held');
+  for(var k=0;k<+badge.dataset.fronts;k++){var d=document.createElement('i');if(k<+badge.dataset.held)d.className='on';held.appendChild(d);}
+  function runBadge(){
+    if(done)return;done=true;
+    document.getElementById('fill').style.strokeDasharray=(frac*1000)+' 1000';
+    var t0=performance.now(),dur=2400,tip=document.getElementById('tip'),num=document.getElementById('num');
+    function step(now){var p=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-p,3);num.textContent=Math.round(score*e);var a=(-90+360*frac*e)*Math.PI/180;tip.setAttribute('cx',150+118*Math.cos(a));tip.setAttribute('cy',150+118*Math.sin(a));if(p<1)requestAnimationFrame(step);}
+    requestAnimationFrame(step);
+  }
+  new IntersectionObserver(function(es){if(es[0].isIntersecting)runBadge();},{threshold:.4}).observe(badge);
+
+  // tabs
+  document.querySelectorAll('.tab').forEach(function(t){t.addEventListener('click',function(){
+    document.querySelectorAll('.tab').forEach(function(x){x.setAttribute('aria-selected','false');});
+    document.querySelectorAll('.panel').forEach(function(p){p.hidden=true;});
+    t.setAttribute('aria-selected','true'); document.getElementById(t.getAttribute('aria-controls')).hidden=false;
+  });});
+})();
+</script>
+</body>
+</html>
