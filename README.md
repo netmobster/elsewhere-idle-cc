@@ -300,5 +300,9 @@ Elsewhere is pick up and play. Same engineering honesty, different cadence.
 
 ---
 
+**More:** [echofiles.substack.com](https://echofiles.substack.com) — where the
+playthroughs get written up, including the one where a municipal quilt mandate
+outperformed every sensible decision in the game.
+
 *Built in Claude Code, over about a week, mostly at night.
 The worst decisions are all documented.*
