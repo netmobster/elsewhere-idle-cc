@@ -203,6 +203,7 @@ each turn, which is nicer. That's an upgrade, not a requirement.
 | [`bench.py`](bench.py) | The judge. Six fitness criteria across twelve seeds. |
 | [`PRD-TRD.md`](PRD-TRD.md) | Design and technical spec. |
 | [`NOTES.md`](NOTES.md) | The build log, including everything that broke. |
+| [`CHANGELOG.md`](CHANGELOG.md) | The shipping record, release by release. |
 | [`resources.md`](resources.md) | Everything, linked and explained. |
 | [`installer.md`](installer.md) | The long-form setup, if the two lines above aren't enough. |
 | [`aboutjay.md`](aboutjay.md) | Who made this and why. |

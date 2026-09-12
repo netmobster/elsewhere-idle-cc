@@ -21,6 +21,9 @@ Genesis: https://seren-dm.lovable.app/ (SEREN — the engine, ledger and roll sy
 - [PRD-TRD.md](PRD-TRD.md): Product and technical specification. Tick model, clock
   advance formula, order resolution ladder, action catalogue, fog-of-war contract,
   fitness criteria.
+- [CHANGELOG.md](CHANGELOG.md): The shipping record — what changed in each release,
+  with the balance numbers as they stood at the time. Read this before citing any
+  figure from the README; the balance was re-measured after the settle rule changed.
 - [NOTES.md](NOTES.md): The honest build log. Every iteration including the failed
   ones, two determinism bugs, two fog leaks, and the balance measurements that were
   invalidated and re-run.
