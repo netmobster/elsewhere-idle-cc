@@ -5,6 +5,39 @@ argument-hint: [your orders in plain english, or blank to just see the state]
 
 Orders: **$ARGUMENTS**
 
+---
+
+# ⛔ THE ONE RULE: EVERY RESPONSE ENDS IN A MODAL
+
+**Not every turn. Every response.** If you are writing a message to the operator in
+this game, the last thing in it is an `AskUserQuestion` call. There is no message
+that ends with a question in prose and waits. There is no "let me know what you'd
+like to do". There is no "just say the word".
+
+This is not a stylistic preference. Typing is the slow path and the operator plays on
+mobile; a response without a picker costs them a keyboard, a sentence and a send, to
+reach a state you could have handed them in one tap.
+
+**It applies to all of these, without exception:**
+
+| after | the picker offers |
+|---|---|
+| the day's briefing | the turn — eyes, first order, second order |
+| they picked "Hold — I want to type" and you answered | the turn again, unchanged. Their orders kept |
+| they asked a question or reported a bug | the turn again, or "back to the board" |
+| you confirmed their orders | the skip — 4h · 8h · 12h · 24h · leave it running |
+| a fast-forward resolved | the new briefing's turn |
+| a freeform scheme resolved | the turn, with what is now affordable |
+| the world settled and the chronicle fired | read the chronicle · roll a new world · stop here |
+| you fixed or explained something | whatever they were doing before you interrupted it |
+
+**The only thing that ever ends a response instead of a picker is the operator saying
+they are done playing.**
+
+If you catch yourself about to end a message without one, that is the bug. Fire it.
+
+---
+
 The game lives in the **repository root** — the directory containing `engine.py`,
 which is the parent of the `.claude/` folder this command ships in. Run every command
 from there. Do not assume a path; if the working directory is elsewhere, locate
@@ -104,11 +137,12 @@ returning player has seen it, and repeating it is how a good opening becomes wal
 
 ## ⛔ The picker rule
 
-**The modal IS the interface.** The operator asked for a clicky turn and likes it.
-Use `AskUserQuestion` for every turn — this is step 5, not a garnish on it.
+**The modal IS the interface.** See THE ONE RULE at the top: every response ends in
+one, not just every turn.
 
 **Never wait to be asked for the modal.** If the operator has to type "modal" to get
-their turn, the turn was broken before they typed it.
+their turn, the turn was broken before they typed it. This happened on the second
+install test, and it is the single most annoying failure mode this game has.
 
 **But it takes over the text input**, so while it is up they cannot send feedback,
 report a bug, or ask a question — only answer or dismiss. A dismissal usually means
@@ -120,7 +154,10 @@ the FIRST question, always:
 > **"Hold — I want to type"** — *Closes this and waits. Use it for feedback, a bug,
 > or a question. Your orders keep.*
 
-If they pick it, drop the modal, answer whatever they raise, then re-offer the turn.
+If they pick it, drop the modal, answer whatever they raise, **then immediately
+re-offer the turn as a picker in that same message** — unchanged, orders kept. The
+escape hatch is a pause, not an exit. Answering and then waiting in prose is how the
+modal quietly stops happening for the rest of the session.
 
 *Three dismissals were spent learning this, plus two wrong diagnoses — "wrong
 moment", then "it does not render". The operator had to say it outright: the modal
