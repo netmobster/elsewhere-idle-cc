@@ -851,6 +851,15 @@ section{{display:flex;flex-direction:column;gap:12px}}
 .logo .word{{font-family:var(--caps);font-weight:600;letter-spacing:.18em;font-size:17px;line-height:1;display:block}}
 .logo .sub{{font-family:var(--caps);font-size:8px;letter-spacing:.42em;color:var(--ember);display:block;margin-top:3px}}
 .hours{{display:flex;align-items:center;gap:10px}}
+/* Text size. The board is read in a narrow pane at 14px, which is fine for the
+   author and not for everybody. One point per click, and it remembers. */
+.type{{display:flex;align-items:center;gap:2px;padding:3px;border-radius:999px;
+  border:1px solid var(--edge);margin-right:10px}}
+.type button{{font-family:var(--caps);font-size:11px;line-height:1;color:var(--soft);
+  background:transparent;border:0;cursor:pointer;padding:5px 7px;border-radius:999px;
+  transition:color .15s,background .15s}}
+.type button:hover{{color:var(--ink);background:var(--edge)}}
+#fs-now{{min-width:26px;font-variant-numeric:tabular-nums;letter-spacing:.06em}}
 .hours .now{{font-family:var(--caps);font-size:9px;letter-spacing:.3em;color:var(--soft)}}
 .hours .picker{{display:flex;gap:8px;padding:6px 8px;border-radius:999px;border:1px solid var(--edge)}}
 .hours button{{width:16px;height:16px;border:0;padding:0;cursor:pointer;border-radius:999px;background:transparent;box-shadow:inset 0 0 0 1.5px var(--soft)}}
@@ -1084,6 +1093,11 @@ dl.gterms dd{{margin:4px 0 0;color:var(--mid);line-height:1.65}}
         </svg>
         <span><span class="word">ELSEWHERE</span><span class="sub">IDLE CC</span></span>
       </span>
+      <div class="type" role="group" aria-label="Text size">
+        <button id="fs-down" title="Smaller text" aria-label="Smaller text">&minus;</button>
+        <button id="fs-now" title="Reset text size" aria-label="Reset text size">14</button>
+        <button id="fs-up" title="Larger text" aria-label="Larger text">+</button>
+      </div>
       <div class="hours">
         <span class="now" id="hour-word">{world_mode.upper()}</span>
         <div class="picker" role="group" aria-label="Hour of the world">
@@ -1173,6 +1187,36 @@ dl.gterms dd{{margin:4px 0 0;color:var(--mid);line-height:1.65}}
   }}
   document.querySelectorAll('.hours button').forEach(function(b){{ b.addEventListener('click', function(){{ setMode(b.dataset.mode); }}); }});
   setMode(WORLD);
+
+  /* ---- text size ----------------------------------------------------------
+     Every size on this board is a hardcoded px value, so raising body
+     font-size cascades to nothing. Scaling the root does cascade, and takes
+     the rules, gaps and bars with it, which is what "bigger" actually means
+     here. One point per click against a 14px base. Unbounded upward; floored
+     at 8 only because a zoom factor near zero cannot be clicked back. */
+  (function () {{
+    var BASE = 14, KEY = 'elsewhere-fs', size = BASE;
+    try {{ var v = parseInt(localStorage.getItem(KEY), 10); if (v >= 8) size = v; }} catch (e) {{}}
+    var out = document.getElementById('fs-now');
+    function apply() {{
+      document.documentElement.style.zoom = (size / BASE).toFixed(4);
+      if (out) out.textContent = String(size);
+      try {{ localStorage.setItem(KEY, String(size)); }} catch (e) {{}}
+    }}
+    function step(n) {{ size = Math.max(8, size + n); apply(); }}
+    var up = document.getElementById('fs-up'), dn = document.getElementById('fs-down');
+    if (up) up.addEventListener('click', function () {{ step(1); }});
+    if (dn) dn.addEventListener('click', function () {{ step(-1); }});
+    if (out) out.addEventListener('click', function () {{ size = BASE; apply(); }});
+    document.addEventListener('keydown', function (ev) {{
+      if (ev.target && /^(INPUT|TEXTAREA)$/.test(ev.target.tagName)) return;
+      if (ev.key === '+' || ev.key === '=') {{ step(1); }}
+      else if (ev.key === '-' || ev.key === '_') {{ step(-1); }}
+      else return;
+      ev.preventDefault();
+    }});
+    apply();
+  }})();
 
   var g = document.getElementById('sparks'), NS = 'http://www.w3.org/2000/svg';
   function rnd(i,m){{ return ((i*9301+49297)%233280)/233280*m; }}

@@ -48,7 +48,8 @@ Enforces the fog contract:
 - an unwatched clock renders as fog, never as zero
 - `horizon()` estimates require a clock you actually have
 
-Also holds the hour-of-the-world logic (the sky follows the *world's* time in ET,
+Also holds the text-size control (one point per click, unbounded, remembered
+per browser), the hour-of-the-world logic (the sky follows the *world's* time in ET,
 not the reader's), the guide drawer, the NOW panel, and the epilogue modal.
 
 ### [`epilogue.py`](epilogue.py) — the ending

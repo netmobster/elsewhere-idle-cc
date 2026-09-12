@@ -40,6 +40,12 @@ installs it. First run rolls a world, renders the board and takes your orders.
 **If `/elsewhere` doesn't appear**, Claude Code loads its command list at startup —
 restart the session and it will be there.
 
+**If you already have a global `/elsewhere`** at `~/.claude/commands/elsewhere.md`
+from an earlier copy, it can shadow the one in the repo, and you will find yourself
+playing the old world from the new directory. Delete the global one, or make it
+locate `engine.py` in the working directory first. The command that ships in the
+repo is path-agnostic and needs no configuration.
+
 ---
 
 ## Where things live
