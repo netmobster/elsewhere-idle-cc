@@ -1,5 +1,9 @@
 # Elsewhere — Idle RPG in Claude Code
 
+> **Unbounded input, entering a bounded deterministic reality engine — and an AI beside
+> you that has to narrate the result and live with it exactly like you do.** That is the
+> whole architecture and the whole pitch.
+>
 > An idle RPG that runs inside Claude Code in real time. Three neighbouring factions
 > each pursue an agenda on ten-segment clocks that advance whether the player is
 > present or not. The player has one lookout and five standing orders. A Python

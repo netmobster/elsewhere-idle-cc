@@ -1,6 +1,8 @@
 # 🕯️ Elsewhere
 
-**An idle RPG that runs in Claude Code, in real time, whether you are there or not.**
+**Unbounded input, entering a bounded deterministic reality engine — and an AI beside you that has to narrate the result and live with it exactly like you do.**
+
+An idle RPG inside Claude Code. It runs in real time whether you are there or not.
 
 ### 🌐 [https://netmobster.github.io/elsewhere-idle-cc/](https://netmobster.github.io/elsewhere-idle-cc/)
 
@@ -125,10 +127,15 @@ That paragraph is from the chronicle the game wrote itself, from the ledger, at 
 |---|---|---|
 | **The board** | State. Exactly what is true, rolled by the engine, arithmetic showing. | Interpret. Advise. Invent. |
 | **The chat** | Intelligence. Reads the ledger and tells you what it means. | Decide outcomes. Contradict a roll. |
-| **The modal** | Options. The turn in three clicks with real costs attached. | Be the only way to play. |
+| **The modal** | Orientation. Priced options that show you the shape of the possible. | Be the only way to play. |
 | **Freeform** | Anything not on the menu. You ask; the world answers. | Break the engine. |
 
 The first three are a UI. **The fourth is why this needs an agent.**
+
+And the modal is not a menu — it is a **map**. Four priced options tell you what this
+world takes seriously and roughly what it costs, in about three seconds. *Then* you
+can aim a sentence at it. The freeform layer does not escape the modal; the modal is
+what makes freeform usable. Options first, intent second.
 
 ---
 

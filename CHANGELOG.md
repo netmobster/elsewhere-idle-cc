@@ -8,6 +8,38 @@ Dates are the author's local time.
 
 ---
 
+## v1.1.1 — one argument, everywhere — 2026-09-12
+
+No code. The project had been describing itself by its *schedule* on every surface —
+"an idle RPG that runs in real time whether you are there or not" — which says when it
+happens and nothing about what it is.
+
+The actual thesis, arrived at while writing about it rather than while building it:
+
+> **Unbounded input, entering a bounded deterministic reality engine — and an AI
+> beside you that has to narrate the result and live with it exactly like you do.**
+
+That is the part nobody else is doing. The schedule is the hook; this is the design.
+It now leads the README, the landing page, `llms.txt`, the demo's social card and the
+repo description, at three lengths so each surface gets one that fits.
+
+The consequence worth stating, and the reason "beside you" is not decoration: the
+model is bound by everything the player is. It does not know the roll before it
+writes. It has to make sense of an outcome it would not have chosen. It cannot revise,
+because the ledger only appends. **And it is bound by its own translation** — it
+priced the scheme, so it then has to narrate whatever that price produced, generous or
+cruel.
+
+### Changed
+
+- **The four surfaces: "the modal is options" → "the modal is orientation."** Options
+  are not a menu, they are a map — four priced choices show what the world takes
+  seriously and roughly what it costs, and *then* a sentence can be aimed at it. The
+  freeform layer does not escape the modal; the modal is what makes freeform usable.
+  Options first, intent second. Corrected in the README and on the site.
+
+---
+
 ## v1.1.0 — the chaos goblin release — 2026-09-12
 
 The second playtest was played entirely sideways — a coronation feast thrown to
