@@ -1,5 +1,7 @@
 # Installing Elsewhere
 
+[Site](https://netmobster.github.io/elsewhere-idle-cc/) · [Repo](https://github.com/netmobster/elsewhere-idle-cc)
+
 **Short version:** clone it, open Claude Code, type `/elsewhere`. That's it.
 
 There is no installer because there is nothing to install. The game is six Python

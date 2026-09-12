@@ -175,6 +175,7 @@ nav .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px
 .files{display:grid;grid-template-columns:auto 1fr;gap:0 24px}
 .files>*{padding:11px 0;border-top:1px solid var(--edge);font-size:15px;color:var(--mid)}
 .files code{background:transparent;border:0;padding:0;color:var(--ember);font-size:14px}
+.files a{border-bottom:1px solid transparent}.files a:hover{border-bottom-color:var(--ember)}.files a:hover code{color:var(--ink)}
 footer{padding:64px 0 90px;border-top:1px solid var(--edge);color:var(--soft);font-size:14px;display:flex;flex-direction:column;gap:22px}
 footer .it{font-style:italic}
 
@@ -210,7 +211,7 @@ footer .it{font-style:italic}
       <span><span class="word">ELSEWHERE</span><span class="sub">IDLE CC</span></span>
     </a>
     <div class="navlinks">
-      <a class="hide" href="#how">HOW</a><a class="hide" href="#fog">FOG</a><a class="hide" href="#epilogue">EPILOGUE</a><a class="hide" href="#install">INSTALL</a>
+      <a class="hide" href="#how">HOW</a><a class="hide" href="#fog">FOG</a><a class="hide" href="#epilogue">EPILOGUE</a><a class="hide" href="#install">INSTALL</a><a class="hide" href="#source">SOURCE</a>
       <a href="https://github.com/netmobster/elsewhere-idle-cc">GITHUB</a>
       <div class="hours"><span class="now" id="hour-word">NIGHT</span>
         <div class="picker" role="group" aria-label="Hour of the world">
@@ -427,7 +428,7 @@ footer .it{font-style:italic}
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px 56px;margin-top:40px;max-width:900px" class="in">
       <p class="dim">Attention is worth about three and a half times an absentee&rsquo;s score &mdash; and it still loses you a neighbour in five worlds out of six. A game the attentive player always won would be as broken as one they always lost. <span class="label hot" style="margin-left:8px">PASS 6/6</span></p>
-      <p class="dim">The hoarder is the interesting one: it loses on average and <b>beats careful play two times in five.</b> That's the gamble, and it's deliberate.</p>
+      <p class="dim">The hoarder is the interesting one: it loses on average and <b>beats careful play one time in four.</b> That's the gamble, and it's deliberate.</p>
     </div>
   </section>
 
@@ -447,13 +448,55 @@ footer .it{font-style:italic}
         <p class="dim"><b>Requirements:</b> Python 3.9+. No packages, no build step, no server, no account.</p>
         <p class="dim"><b>The board is a plain HTML file on disk</b> — <code>elsewhere-board.html</code>, double-clickable. If your plan supports Claude Code Artifacts it'll publish to a live pane that updates each turn, which is nicer. That's an upgrade, not a requirement.</p>
         <div class="files">
-          <code>engine.py</code><span>Truth. Every outcome in the game is decided here.</span>
-          <code>render.py</code><span>The board. Renders your file on the world, never the world.</span>
-          <code>sim.py</code><span>Fast-forward. Scripted players so a fortnight runs in a second.</span>
-          <code>bench.py</code><span>The judge. Six fitness criteria across twelve seeds.</span>
-          <code>NOTES.md</code><span>The build log, including everything that broke.</span>
+          <a href="https://github.com/netmobster/elsewhere-idle-cc/blob/main/engine.py"><code>engine.py</code></a><span>Truth. Every outcome in the game is decided here.</span>
+          <a href="https://github.com/netmobster/elsewhere-idle-cc/blob/main/render.py"><code>render.py</code></a><span>The board. Renders your file on the world, never the world.</span>
+          <a href="https://github.com/netmobster/elsewhere-idle-cc/blob/main/epilogue.py"><code>epilogue.py</code></a><span>The ending. Lifts the fog, scores the world, writes the badge.</span>
+          <a href="https://github.com/netmobster/elsewhere-idle-cc/blob/main/sim.py"><code>sim.py</code></a><span>Fast-forward. Scripted players so a fortnight runs in a second.</span>
+          <a href="https://github.com/netmobster/elsewhere-idle-cc/blob/main/bench.py"><code>bench.py</code></a><span>The judge. Six fitness criteria across twelve seeds.</span>
+          <a href="https://github.com/netmobster/elsewhere-idle-cc/blob/main/NOTES.md"><code>NOTES.md</code></a><span>The build log, including everything that broke.</span>
         </div>
       </div>
+    </div>
+  </section>
+
+  <section id="source">
+    <div class="head in"><span class="label hot">THE SOURCE</span>
+      <h2>Every file, and what it is for.</h2>
+      <p class="lede dim">Sixteen files, no dependencies, nothing hidden. The build log is
+      honest about what broke, including the balance that had to be re-measured twice.</p>
+    </div>
+    <div class="grid in" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+      <div>
+        <span class="label">THE ENGINE</span>
+        <div class="files">
+          <a href="https://github.com/netmobster/elsewhere-idle-cc/blob/main/engine.py"><code>engine.py</code></a><span>Truth. Seeded per-tick RNG, clocks, raids, orders, interest, mega projects, and the improvise path behind freeform.</span>
+          <a href="https://github.com/netmobster/elsewhere-idle-cc/blob/main/render.py"><code>render.py</code></a><span>The board. Enforces the fog contract — never emits a <code>true</code> fact.</span>
+          <a href="https://github.com/netmobster/elsewhere-idle-cc/blob/main/epilogue.py"><code>epilogue.py</code></a><span>The ending. Lifts the fog, scores the run, writes the badge and the chronicle.</span>
+        </div>
+      </div>
+      <div>
+        <span class="label">THE HARNESS</span>
+        <div class="files">
+          <a href="https://github.com/netmobster/elsewhere-idle-cc/blob/main/sim.py"><code>sim.py</code></a><span>Four scripted players — attentive, hoarder, erratic, absentee.</span>
+          <a href="https://github.com/netmobster/elsewhere-idle-cc/blob/main/bench.py"><code>bench.py</code></a><span>Six fitness criteria across twelve seeds. Exits non-zero on a failing build.</span>
+          <a href="https://github.com/netmobster/elsewhere-idle-cc/blob/main/.claude/commands/elsewhere.md"><code>/elsewhere</code></a><span>The slash command. Ships in the repo, so cloning installs it.</span>
+        </div>
+      </div>
+      <div>
+        <span class="label">THE DOCUMENTS</span>
+        <div class="files">
+          <a href="https://github.com/netmobster/elsewhere-idle-cc/blob/main/README.md"><code>README.md</code></a><span>The pitch, the mechanics, the lineage.</span>
+          <a href="https://github.com/netmobster/elsewhere-idle-cc/blob/main/PRD-TRD.md"><code>PRD-TRD.md</code></a><span>Formulas, contracts, criteria, and the traps.</span>
+          <a href="https://github.com/netmobster/elsewhere-idle-cc/blob/main/NOTES.md"><code>NOTES.md</code></a><span>The build log. Two determinism bugs, two fog leaks, one balance regression.</span>
+          <a href="https://github.com/netmobster/elsewhere-idle-cc/blob/main/installer.md"><code>installer.md</code></a><span>Setup, full CLI reference, troubleshooting.</span>
+          <a href="https://github.com/netmobster/elsewhere-idle-cc/blob/main/resources.md"><code>resources.md</code></a><span>Every file, linked and explained.</span>
+          <a href="https://github.com/netmobster/elsewhere-idle-cc/blob/main/llms.txt"><code>llms.txt</code></a><span>Machine-readable summary, for agents.</span>
+        </div>
+      </div>
+    </div>
+    <div class="in" style="display:flex;gap:16px;flex-wrap:wrap;margin-top:40px">
+      <a class="btn solid" href="https://github.com/netmobster/elsewhere-idle-cc">BROWSE THE REPO</a>
+      <a class="btn" href="https://github.com/netmobster/elsewhere-idle-cc/blob/main/NOTES.md">READ THE BUILD LOG</a>
     </div>
   </section>
 
@@ -462,8 +505,13 @@ footer .it{font-style:italic}
       <span class="label">GENESIS</span>
       <p>The engine, the ledger and the roll system descend from <a href="https://seren-dm.lovable.app/">SEREN</a> — a single-player AI dungeon master whose own description is <em>"files and the shell keep the numbers honest."</em> SEREN is the immersive one — an evening, a campaign, a world you live in. Elsewhere is pick up and play. Same engineering honesty, different cadence.</p>
     </div>
+    <div style="display:flex;flex-direction:column;gap:8px;max-width:720px">
+      <span class="label">WHO</span>
+      <p>Jeremy &ldquo;Jay&rdquo; Wright. Builder, weirdo, karaoke fiend.
+      More at <a href="https://echofiles.substack.com">echofiles.substack.com</a>.</p>
+    </div>
     <p class="it">Built in Claude Code, over about a week, mostly at night. The worst decisions are all documented.</p>
-    <p><a href="https://github.com/netmobster/elsewhere-idle-cc">github.com/netmobster/elsewhere-idle-cc</a> · <a href="https://github.com/netmobster/elsewhere-idle-cc/blob/main/LICENSE">Licence</a></p>
+    <p><a href="https://github.com/netmobster/elsewhere-idle-cc">github.com/netmobster/elsewhere-idle-cc</a> · <a href="https://github.com/netmobster/elsewhere-idle-cc/blob/main/README.md">Readme</a> · <a href="https://github.com/netmobster/elsewhere-idle-cc/blob/main/NOTES.md">Build log</a> · <a href="https://github.com/netmobster/elsewhere-idle-cc/blob/main/installer.md">Install</a> · <a href="https://github.com/netmobster/elsewhere-idle-cc/blob/main/aboutjay.md">About</a> · <a href="https://github.com/netmobster/elsewhere-idle-cc/blob/main/LICENSE">Licence</a></p>
   </footer>
 </main>
 

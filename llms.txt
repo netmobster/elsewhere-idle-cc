@@ -10,6 +10,7 @@
 > When a world ends, the model writes a narrative chronicle from the ledger,
 > including everything the player could not see during play.
 
+Site: https://netmobster.github.io/elsewhere-idle-cc/
 Repository: https://github.com/netmobster/elsewhere-idle-cc
 Genesis: https://seren-dm.lovable.app/ (SEREN — the engine, ledger and roll system)
 

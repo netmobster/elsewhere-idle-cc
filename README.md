@@ -2,6 +2,8 @@
 
 **An idle RPG that runs in Claude Code, in real time, whether you are there or not.**
 
+### 🌐 [https://netmobster.github.io/elsewhere-idle-cc/](https://netmobster.github.io/elsewhere-idle-cc/)
+
 Two minutes a day. Three neighbours who each want something. One set of eyes, and
 three directions to point it.
 

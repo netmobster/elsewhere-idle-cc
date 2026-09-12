@@ -85,7 +85,7 @@ python bench.py 12
 
 | file | what it is |
 |---|---|
-| [`index.html`](index.html) | The landing page. Self-contained, no build step. |
+| [`index.html`](index.html) | The landing page, served at [https://netmobster.github.io/elsewhere-idle-cc/](https://netmobster.github.io/elsewhere-idle-cc/). Self-contained, no build step. |
 | [`README.md`](README.md) | The repo front page. Pitch, mechanics, the four surfaces, install, balance, lineage. |
 | [`PRD-TRD.md`](PRD-TRD.md) | Product and technical spec. The formulas, the contracts, the criteria, and the traps. |
 | [`NOTES.md`](NOTES.md) | The build log. Every iteration, including the ones that made things worse. |
