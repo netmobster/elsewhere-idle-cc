@@ -130,11 +130,23 @@ returning player has seen it, and repeating it is how a good opening becomes wal
      At 800+ coin with a strong roll it goes MYTHIC and resets the whole board.
      Never talk a player out of one; it loses on average and wins two times in five.
    - Infer cost from ambition: small 20, normal 40, big 80+. Say what you inferred.
-6. **Confirm and let them go.** One line. Never ask them to confirm twice.
+6. **Confirm the orders in ONE line, and put the clock in the same picker.**
 
-7. **Offer the skip (playtesting).** After the turn is locked, offer fast-forward in
-   chat: **4h · 8h · 12h · 24h**, plus "leave it running". Run it with
-   `python engine.py ff 8h` (the `h` suffix is hours; a bare number is days).
+   These were two steps and it was wrong. Confirming in prose and *then* offering the
+   skip separately makes the natural shape of a turn end in prose — which is how the
+   modal gets dropped. It was dropped twice in the first world played after this file
+   was written, by the author of the rule. Fold them together:
+
+   One line of confirmation, then immediately `AskUserQuestion`:
+   **8h · 24h · leave it running · "Hold — I want to type"**.
+   Run it with `python engine.py ff 8h` (the `h` suffix is hours; a bare number is
+   days). "Leave it running" is the real game and should never be framed as the
+   boring option.
+
+   **A dismissed picker is not an answer.** If they dismiss, or the answer comes back
+   empty, advance NOTHING and say so. Never read a dismissal as consent to move the
+   world — the whole game is that time passes without them, and moving it without
+   being asked is the one thing that breaks trust in that.
    In normal play this is unnecessary — real time does it for free — but while
    testing, waiting a day to see one tick is not viable.
 
