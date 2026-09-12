@@ -1,0 +1,1210 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Eight Days in Fen's Reach — a played game of Elsewhere</title>
+<meta name="description" content="One complete game of Elsewhere, eight in-world days, scene by scene. Every player line is verbatim and every roll comes from the engine's ledger.">
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="favicon-180.png">
+
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Elsewhere">
+<meta property="og:url" content="https://netmobster.github.io/elsewhere-idle-cc/demo.html">
+<meta property="og:title" content="Eight Days in Fen's Reach — a played game of Elsewhere">
+<meta property="og:description" content="A lord threw a party, sent his population at a raider camp naked, and lost the coast road while everyone was busy with quilts. Every roll is from the ledger.">
+<meta property="og:image" content="https://netmobster.github.io/elsewhere-idle-cc/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Eight Days in Fen's Reach">
+<meta name="twitter:description" content="One complete game of Elsewhere, scene by scene. Score 1019. The road closed while nobody was looking at it.">
+<meta name="twitter:image" content="https://netmobster.github.io/elsewhere-idle-cc/og.png">
+<meta name="theme-color" content="#0e0e0d">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Spectral:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* This page is a dark tool containing a dark board. Declare it, so the browser
+   paints scrollbars and form chrome to match instead of fighting it. */
+:root{color-scheme:dark}
+html,body{background:#0e0e0d}
+/* A way back. The artifact had no home to return to; a published page needs one. */
+.backhome{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 26px;border-bottom:1px solid #2e2d2a;background:#0e0e0d;
+  font-family:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;font-size:11px;
+  letter-spacing:.18em;text-transform:uppercase;
+}
+.backhome a{color:#a6a29a;text-decoration:none;border-bottom:1px solid transparent}
+.backhome a:hover{color:#ff4d00;border-bottom-color:#ff4d00}
+.backhome span{color:#7d7a73}
+</style>
+</head>
+<body>
+<div class="backhome">
+  <a href="./">&larr; Elsewhere</a><span>&middot;</span>
+  <a href="https://github.com/netmobster/elsewhere-idle-cc">the repo</a><span>&middot;</span>
+  <span>a played game, scene by scene</span>
+</div>
+<style>
+/* ===========================================================================
+   Two worlds, deliberately. The Claude Code chrome is cool, plain, IBM Plex —
+   a tool. The Elsewhere board inside it keeps the game's own real tokens:
+   ember on lacquer, Cinzel and Spectral. The only thing they share is #ff4d00.
+   =========================================================================== */
+:root{
+  /* the tool */
+  --app-bg:#131312;
+  --app-deep:#0e0e0d;
+  --app-panel:#1c1c1a;
+  --app-raise:#232321;
+  --app-ink:#e8e6e1;
+  --app-mid:#a6a29a;
+  --app-soft:#7d7a73;
+  --app-edge:#2e2d2a;
+  --app-line:#3a3835;
+
+  /* the game — lifted verbatim from render.py */
+  --bg:#0d0c0b; --panel:#171513; --ink:#e9e1d3; --mid:#a9a297; --soft:#6f6a62;
+  --edge:#2a2622; --ember:#ff4d00; --ember2:#ff6a1a;
+
+  /* outcomes — earthy, so they never fight the ember */
+  --ok:#8fa86b;
+  --partial:#c9973f;
+  --null:#7d7a73;
+  --bad:#a33a22;
+
+  --sans:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --caps:Cinzel,"Times New Roman",serif;
+  --serif:Spectral,Georgia,serif;
+}
+/* This page commits to one visual world on purpose: it is a screenshot of a
+   dark terminal tool containing a dark lacquered game board. Inverting it
+   would misrepresent both. Every colour is painted explicitly so it holds on
+   any host ground. */
+
+*{box-sizing:border-box}
+*{scrollbar-width:thin;scrollbar-color:var(--app-line) transparent}
+*::-webkit-scrollbar{width:8px;height:8px}
+*::-webkit-scrollbar-track{background:transparent}
+*::-webkit-scrollbar-thumb{background:var(--app-line);border-radius:99px;
+  border:2px solid transparent;background-clip:content-box}
+*::-webkit-scrollbar-thumb:hover{background:var(--ember)}
+
+body{
+  margin:0;background:var(--app-deep);color:var(--app-ink);
+  font-family:var(--sans);font-size:14px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------------------------------------------------------------- page head */
+.pagehead{
+  display:flex;align-items:baseline;justify-content:space-between;
+  gap:16px;flex-wrap:wrap;
+  padding:20px 26px 14px;border-bottom:1px solid var(--app-edge);
+  background:var(--app-bg);
+}
+.ph-left{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.ph-title{
+  font-family:var(--caps);font-weight:600;font-size:17px;letter-spacing:.14em;
+  margin:0;color:var(--app-ink);
+}
+.ph-sub{font-size:12.5px;color:var(--app-soft);font-style:italic}
+.ph-right{display:flex;gap:18px;align-items:baseline}
+.ph-stat{display:flex;flex-direction:column;gap:2px;text-align:right}
+.ph-stat b{font-family:var(--caps);font-size:15px;font-weight:400;letter-spacing:.04em}
+.ph-stat span{font-size:8.5px;letter-spacing:.26em;color:var(--app-soft);text-transform:uppercase}
+.ph-stat.hot b{color:var(--ember)}
+
+/* ------------------------------------------------------------- the filmstrip */
+.strip{
+  display:flex;gap:0;
+  overflow-x:auto;overflow-y:hidden;
+  scroll-snap-type:x mandatory;
+  scroll-behavior:smooth;
+}
+.frame{
+  flex:0 0 100%;
+  scroll-snap-align:center;
+  padding:22px 26px 20px;
+  min-width:0;
+}
+
+/* --------------------------------------------------------- the fake CC window */
+.win{
+  display:flex;flex-direction:column;
+  height:min(74vh,690px);
+  background:var(--app-bg);
+  border:1px solid var(--app-line);
+  border-radius:8px;
+  overflow:hidden;
+  box-shadow:0 18px 50px rgba(0,0,0,.45);
+}
+.titlebar{
+  flex:0 0 auto;
+  display:flex;align-items:center;gap:12px;
+  padding:9px 14px;
+  background:var(--app-panel);
+  border-bottom:1px solid var(--app-edge);
+}
+.dots{display:flex;gap:6px}
+.dots i{width:10px;height:10px;border-radius:99px;background:var(--app-line);display:block}
+.tb-path{
+  font-family:var(--mono);font-size:11.5px;color:var(--app-soft);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.tb-path b{color:var(--app-mid);font-weight:500}
+.tb-tag{
+  margin-left:auto;flex:0 0 auto;
+  font-family:var(--mono);font-size:10px;letter-spacing:.1em;
+  color:var(--ember);border:1px solid var(--edge);
+  padding:2px 8px;border-radius:99px;background:rgba(255,77,0,.07);
+}
+
+/* two panes: chat left, board right */
+.panes{
+  flex:1 1 auto;min-height:0;
+  display:grid;
+  grid-template-columns:minmax(0,1.32fr) minmax(0,1fr);
+}
+.chat{
+  min-width:0;min-height:0;
+  overflow-y:auto;
+  padding:18px 20px 22px;
+  display:flex;flex-direction:column;gap:14px;
+  border-right:1px solid var(--app-edge);
+}
+.boardpane{
+  min-width:0;min-height:0;
+  overflow-y:auto;
+  background:var(--bg);
+  padding:16px 16px 20px;
+}
+
+/* ------------------------------------------------------------- chat elements */
+.eyebrow{
+  font-size:8.5px;letter-spacing:.3em;text-transform:uppercase;
+  color:var(--ember);font-weight:600;
+}
+.teach{
+  font-size:12.5px;color:var(--app-mid);
+  border-left:2px solid var(--app-line);
+  padding:2px 0 2px 12px;
+  font-style:italic;
+}
+.msg{display:flex;flex-direction:column;gap:6px}
+.who{
+  display:flex;align-items:center;gap:8px;
+  font-size:9px;letter-spacing:.24em;text-transform:uppercase;color:var(--app-soft);
+}
+.who i{
+  width:5px;height:5px;border-radius:99px;background:var(--app-soft);display:block;
+}
+.who.you i{background:var(--ember)}
+.who.you{color:var(--ember)}
+
+.said{
+  font-family:var(--mono);font-size:13px;line-height:1.6;
+  background:var(--app-raise);
+  border:1px solid var(--app-line);
+  border-left:2px solid var(--ember);
+  border-radius:3px;
+  padding:11px 13px;
+  color:var(--app-ink);
+}
+.narr{font-size:13.5px;line-height:1.62;color:var(--app-ink)}
+.narr p{margin:0 0 9px}
+.narr p:last-child{margin-bottom:0}
+.narr strong{color:#fff;font-weight:600}
+.narr em{color:var(--app-mid)}
+
+/* the dice block — the one thing in the game that cannot be argued with */
+.roll{
+  font-family:var(--mono);font-size:12px;line-height:1.75;
+  background:var(--app-deep);
+  border:1px solid var(--app-line);
+  border-radius:3px;
+  padding:10px 12px;
+  overflow-x:auto;
+  white-space:pre;
+  color:var(--app-mid);
+}
+.roll b{color:var(--app-ink);font-weight:500}
+.roll .hit{color:var(--ember);font-weight:500}
+
+.beat{
+  display:flex;gap:10px;align-items:flex-start;
+  padding:9px 11px;border-radius:3px;
+  background:var(--app-panel);
+  border:1px solid var(--app-edge);
+  border-left:3px solid var(--null);
+}
+.beat.ok{border-left-color:var(--ok)}
+.beat.part{border-left-color:var(--partial)}
+.beat.nil{border-left-color:var(--null)}
+.beat.bad{border-left-color:var(--bad)}
+.beat.mega{border-left-color:var(--ember);background:rgba(255,77,0,.06)}
+.beat-txt{min-width:0;font-size:12.5px;line-height:1.55}
+.beat-txt b{display:block;font-size:10px;letter-spacing:.16em;text-transform:uppercase;margin-bottom:3px}
+.beat.ok .beat-txt b{color:var(--ok)}
+.beat.part .beat-txt b{color:var(--partial)}
+.beat.nil .beat-txt b{color:var(--null)}
+.beat.bad .beat-txt b{color:var(--bad)}
+.beat.mega .beat-txt b{color:var(--ember)}
+.beat-txt span{color:var(--app-mid)}
+
+/* how it was priced — the one extra you asked for */
+.priced{
+  border:1px dashed var(--app-line);
+  border-radius:3px;
+  padding:11px 13px;
+  background:rgba(255,255,255,.014);
+  display:flex;flex-direction:column;gap:7px;
+}
+.priced-h{
+  font-size:8.5px;letter-spacing:.26em;text-transform:uppercase;
+  color:var(--app-soft);font-weight:600;
+}
+.priced dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:12px}
+.priced dt{font-family:var(--mono);color:var(--ember);white-space:nowrap}
+.priced dd{margin:0;color:var(--app-mid)}
+.priced .why{font-size:12px;color:var(--app-mid);font-style:italic;margin:0}
+
+/* --------------------------------------------------- the modal, below the chat */
+.modalwrap{
+  flex:0 0 auto;
+  border-top:1px solid var(--app-edge);
+  background:var(--app-panel);
+  padding:13px 20px 15px;
+  display:flex;flex-direction:column;gap:9px;
+}
+.modal-h{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  font-size:8.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--app-soft);
+}
+.modal-h b{color:var(--ember);font-weight:600}
+.qrow{display:flex;flex-direction:column;gap:8px}
+.q{
+  display:grid;grid-template-columns:minmax(0,auto) minmax(0,1fr);
+  gap:4px 14px;align-items:baseline;
+}
+.q-ask{font-size:12px;color:var(--app-mid);font-weight:500}
+.q-chip{
+  font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--app-soft);border:1px solid var(--app-line);
+  padding:2px 7px;border-radius:3px;white-space:nowrap;align-self:start;
+}
+.q-ans{
+  grid-column:1 / -1;
+  display:flex;gap:9px;align-items:flex-start;
+  font-size:12.5px;
+  background:var(--app-deep);
+  border:1px solid var(--app-line);
+  border-left:2px solid var(--ember);
+  border-radius:3px;padding:8px 11px;
+}
+.q-ans .tick{color:var(--ember);flex:0 0 auto;font-weight:600}
+.q-ans .txt{min-width:0}
+.q-ans .txt.typed{font-family:var(--mono);font-size:12px;line-height:1.6}
+.q-ans .txt em{display:block;color:var(--app-soft);font-size:11px;margin-top:3px;font-style:normal;letter-spacing:.02em}
+
+/* ============================ the Elsewhere board miniature ================ */
+.board{font-family:var(--serif);color:var(--ink);display:flex;flex-direction:column;gap:14px}
+.b-logo{
+  display:flex;align-items:baseline;gap:8px;
+}
+.b-logo span{font-family:var(--caps);font-weight:600;font-size:11px;letter-spacing:.2em}
+.b-logo em{font-family:var(--caps);font-size:7.5px;letter-spacing:.34em;color:var(--ember);font-style:normal}
+.b-mast h3{
+  font-family:var(--caps);font-weight:400;font-size:26px;letter-spacing:.05em;
+  margin:6px 0 4px;line-height:1;text-wrap:balance;
+}
+.b-meta{
+  font-size:11.5px;font-style:italic;color:var(--soft);
+  display:flex;gap:10px;flex-wrap:wrap;
+}
+.b-meta .lit{color:var(--ember);font-style:normal}
+
+.b-horizon{border-left:2px solid var(--ember);padding:4px 0 4px 13px}
+.b-horizon p{margin:0;font-size:14px;line-height:1.35;font-weight:300}
+.b-horizon .q{color:var(--soft);font-style:italic}
+
+.b-stats{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:1px;background:var(--edge);border:1px solid var(--edge);
+}
+.b-stats div{background:var(--panel);padding:9px 10px;display:flex;flex-direction:column;gap:3px}
+.b-stats b{font-family:var(--caps);font-weight:400;font-size:19px;line-height:1;letter-spacing:.03em}
+.b-stats span{font-family:var(--caps);font-size:7.5px;letter-spacing:.24em;color:var(--soft)}
+.b-stats .zero b{color:var(--soft)}
+.b-stats .full b{color:var(--ember)}
+
+.b-fronts{display:flex;flex-direction:column;gap:8px}
+.front{
+  background:var(--panel);border:1px solid var(--edge);
+  padding:9px 10px 10px;display:flex;flex-direction:column;gap:6px;
+}
+.front.watched{border-color:rgba(255,77,0,.4)}
+.front.done{border-color:var(--ember);background:rgba(255,77,0,.07)}
+.f-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.f-name{font-family:var(--caps);font-size:11.5px;letter-spacing:.1em}
+.f-clock{font-family:var(--caps);font-size:11px;letter-spacing:.08em;color:var(--soft);font-variant-numeric:tabular-nums}
+.front.watched .f-clock{color:var(--ember)}
+.front.done .f-clock{color:var(--ember)}
+
+/* ten segments, pure CSS: fill underneath, dividers on top */
+.f-bar{
+  height:9px;
+  --fill:0%;
+  background:
+    repeating-linear-gradient(to right,
+      transparent 0 calc(10% - 2px), var(--panel) calc(10% - 2px) 10%),
+    linear-gradient(to right,
+      var(--ember) 0 var(--fill), var(--edge) var(--fill) 100%);
+}
+.f-bar.fog{
+  background:
+    repeating-linear-gradient(to right,
+      transparent 0 calc(10% - 2px), var(--panel) calc(10% - 2px) 10%),
+    repeating-linear-gradient(45deg,
+      var(--edge) 0 4px, rgba(0,0,0,0) 4px 8px),
+    linear-gradient(to right, var(--edge) 0 100%);
+  opacity:.75;
+}
+.f-doing{font-size:11.5px;font-style:italic;color:var(--mid);line-height:1.4}
+.f-tags{display:flex;gap:6px;flex-wrap:wrap}
+.tag{
+  font-family:var(--caps);font-size:7.5px;letter-spacing:.2em;
+  padding:2px 6px;border:1px solid var(--edge);color:var(--soft);
+}
+.tag.eye{color:var(--ember);border-color:rgba(255,77,0,.4)}
+.tag.dis{color:var(--ok);border-color:rgba(143,168,107,.4)}
+.tag.blind{color:var(--soft)}
+.tag.won{color:var(--ember);border-color:var(--ember);background:rgba(255,77,0,.1)}
+
+.b-watch{
+  font-family:var(--caps);font-size:9px;letter-spacing:.26em;
+  color:var(--soft);border-top:1px solid var(--edge);padding-top:9px;
+}
+.b-watch b{color:var(--ember);font-weight:400}
+
+.b-settled{
+  border:1px solid var(--ember);background:rgba(255,77,0,.08);
+  padding:11px 12px;display:flex;flex-direction:column;gap:5px;
+}
+.b-settled span{font-family:var(--caps);font-size:8.5px;letter-spacing:.28em;color:var(--ember)}
+.b-settled p{margin:0;font-size:12.5px;line-height:1.45;font-weight:300}
+
+/* ------------------------------------------------------------- frame 0 + 7 */
+.opener{
+  height:min(74vh,690px);
+  display:flex;flex-direction:column;justify-content:center;gap:22px;
+  padding:8px 4px;
+}
+.opener h2{
+  font-family:var(--caps);font-weight:400;
+  font-size:clamp(30px,5.2vw,50px);letter-spacing:.04em;
+  line-height:1.02;margin:0;text-wrap:balance;max-width:22ch;
+}
+.opener h2 em{color:var(--ember);font-style:normal}
+.lede{font-size:15px;line-height:1.62;color:var(--app-mid);max-width:62ch;margin:0}
+.lede strong{color:var(--app-ink);font-weight:500}
+.howto{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));
+  gap:1px;background:var(--app-edge);border:1px solid var(--app-edge);max-width:860px;
+}
+.howto div{background:var(--app-panel);padding:13px 14px;display:flex;flex-direction:column;gap:5px}
+.howto b{font-size:8.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--ember);font-weight:600}
+.howto p{margin:0;font-size:12.5px;color:var(--app-mid);line-height:1.5}
+
+.fogtable{width:100%;border-collapse:collapse;font-size:12.5px;max-width:760px}
+.fogtable caption{
+  text-align:left;font-size:8.5px;letter-spacing:.26em;text-transform:uppercase;
+  color:var(--ember);font-weight:600;padding-bottom:9px;
+}
+.fogtable th,.fogtable td{
+  text-align:left;padding:7px 12px 7px 0;
+  border-bottom:1px solid var(--app-edge);vertical-align:top;
+}
+.fogtable th{font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--app-soft);font-weight:600}
+.fogtable td:nth-child(2){font-family:var(--mono);color:var(--app-ink);white-space:nowrap}
+.fogtable td:nth-child(3){color:var(--app-mid)}
+.fogtable tr.froze td:nth-child(2){color:var(--ok)}
+.fogtable tr.froze td:nth-child(3){color:var(--ok)}
+
+.scorewrap{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
+.badge{
+  flex:0 0 auto;border:1px solid var(--ember);background:rgba(255,77,0,.07);
+  padding:16px 22px;display:flex;flex-direction:column;gap:4px;align-items:center;
+}
+.badge b{font-family:var(--caps);font-size:38px;font-weight:400;line-height:1;color:var(--ember)}
+.badge span{font-family:var(--caps);font-size:9px;letter-spacing:.28em;color:var(--app-mid)}
+.badge em{font-size:11px;color:var(--app-soft);font-style:italic}
+.tally{display:flex;flex-direction:column;gap:7px;min-width:0}
+.tally p{margin:0;font-size:13.5px;line-height:1.6;color:var(--app-mid);max-width:58ch}
+.tally p strong{color:var(--app-ink);font-weight:600}
+.sting{
+  font-family:var(--serif);font-style:italic;font-size:15px;color:var(--ember);
+  margin:0;
+}
+
+/* ------------------------------------------------------------------ the rail */
+.rail{
+  position:sticky;bottom:0;z-index:5;
+  display:flex;align-items:stretch;gap:0;
+  background:var(--app-panel);
+  border-top:1px solid var(--app-line);
+  overflow-x:auto;
+}
+.rail button{
+  flex:1 1 0;min-width:92px;
+  background:transparent;border:0;border-right:1px solid var(--app-edge);
+  padding:9px 11px;cursor:pointer;text-align:left;
+  display:flex;flex-direction:column;gap:2px;
+  font-family:var(--sans);color:var(--app-soft);
+  transition:background .15s,color .15s;
+}
+.rail button:last-child{border-right:0}
+.rail button b{
+  font-family:var(--caps);font-size:10px;letter-spacing:.14em;font-weight:400;
+  color:var(--app-mid);
+}
+.rail button span{font-size:9.5px;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rail button:hover{background:var(--app-raise);color:var(--app-mid)}
+.rail button[aria-current="true"]{background:var(--app-deep)}
+.rail button[aria-current="true"] b{color:var(--ember)}
+.rail button[aria-current="true"] span{color:var(--app-mid)}
+.rail button:focus-visible{outline:2px solid var(--ember);outline-offset:-2px}
+
+.hint{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:8px 20px 16px;font-size:11.5px;color:var(--app-soft);
+}
+kbd{
+  font-family:var(--mono);font-size:10.5px;
+  border:1px solid var(--app-line);border-bottom-width:2px;border-radius:3px;
+  padding:1px 5px;color:var(--app-mid);background:var(--app-panel);
+}
+
+@media (max-width:840px){
+  .panes{grid-template-columns:1fr}
+  .chat{border-right:0;border-bottom:1px solid var(--app-edge)}
+  .win{height:min(80vh,760px)}
+  .opener{height:auto;padding:26px 4px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  .strip{scroll-behavior:auto}
+}
+</style>
+
+<header class="pagehead">
+  <div class="ph-left">
+    <h1 class="ph-title">EIGHT DAYS IN FEN'S REACH</h1>
+    <p class="ph-sub">a played game of Elsewhere, replayed scene by scene</p>
+  </div>
+  <div class="ph-right">
+    <div class="ph-stat"><b class="num">691420631</b><span>seed</span></div>
+    <div class="ph-stat hot"><b class="num">1019</b><span>score</span></div>
+    <div class="ph-stat"><b>2 / 3</b><span>fronts held</span></div>
+    <div class="ph-stat"><b>intact</b><span>standing</span></div>
+  </div>
+</header>
+
+<div class="strip" id="strip">
+
+  <!-- ================================================== 0. THE FRAME ====== -->
+  <section class="frame" id="s0" aria-label="Scene 0: the frame">
+    <div class="opener">
+      <p class="eyebrow">How to read this</p>
+      <h2>A town, three problems, and a lord who threw a <em>party</em>.</h2>
+      <p class="lede"><strong>Elsewhere</strong> is an idle game played inside Claude Code. Real time moves the world — you close the terminal, the world keeps going, and when you come back Claude tells you what happened while you were gone. You answer in plain English. Claude translates it into engine calls and the dice decide.</p>
+      <p class="lede">What follows is one complete game, eight in-world days, start to settled. Every line attributed to the player is <strong>verbatim</strong>. Every roll and outcome comes from the engine's own ledger — nothing here was narrated into existence after the fact.</p>
+      <div class="howto">
+        <div>
+          <b>Left pane</b>
+          <p>The conversation. What the player typed, and what Claude reported back from the ledger.</p>
+        </div>
+        <div>
+          <b>Right pane</b>
+          <p>The board — a live artifact that republishes every turn. Fronts, clocks, purse, orders.</p>
+        </div>
+        <div>
+          <b>Below</b>
+          <p>The picker. Each turn was taken through a modal; the player's pick is shown against it.</p>
+        </div>
+        <div>
+          <b>Dashed panels</b>
+          <p>Where Claude inferred a cost for an improvised order, and why it priced it that way.</p>
+        </div>
+      </div>
+      <p class="lede" style="color:var(--app-soft);font-size:13px"><strong style="color:var(--app-mid)">The one rule that makes it work:</strong> only the front you are <em>watching</em> reports real numbers. Everything else is a rumour or silence. The game is decided by where you point your attention — which is the whole joke of what follows.</p>
+    </div>
+  </section>
+
+  <!-- ================================================== 1. DAY 1 ========== -->
+  <section class="frame" id="s1" aria-label="Scene 1: day 1, the feast">
+    <div class="win">
+      <div class="titlebar">
+        <div class="dots"><i></i><i></i><i></i></div>
+        <div class="tb-path"><b>TEST TWO</b> — /elsewhere</div>
+        <div class="tb-tag">DAY 1 · TURN 1</div>
+      </div>
+      <div class="panes">
+        <div class="chat">
+          <p class="eyebrow">Turn 1 · a world with nothing in the ledger</p>
+          <p class="teach">A <em>front</em> is a faction with a ten-segment clock. When the clock fills, they get what they want — and the world ends on whoever gets there first.</p>
+          <div class="msg">
+            <div class="who"><i></i>Claude</div>
+            <div class="narr">
+              <p>Fen's Reach still stands. Four hands, two hundred coin, a roof, and <strong>three problems that haven't decided what they are yet.</strong></p>
+              <p><strong>The Iron Hand</strong> — raiders, burning waystations one a week, working toward a coast road that belongs to nobody but them. You have eyes on them: clock 0, ten days.</p>
+              <p><strong>The Ninth Watch</strong> — diggers, sinking a shaft nobody was asked about. No eyes. <em>No numbers.</em></p>
+              <p><strong>The Quiet Choir</strong> — zealots, singing at the barrow mouth in shifts. No eyes. <em>No numbers.</em></p>
+              <p><em>This is the cleanest the board will ever look.</em></p>
+            </div>
+          </div>
+        </div>
+        <div class="boardpane">
+          <div class="board">
+            <div class="b-mast">
+              <div class="b-logo"><span>ELSEWHERE</span><em>IDLE WORLD IN CC</em></div>
+              <h3>Fen's Reach</h3>
+              <div class="b-meta"><span>day 1</span><span class="lit">intact</span><span>seed 691420631</span></div>
+            </div>
+            <div class="b-horizon"><p>The Iron Hand takes the coast road in about <strong>ten days</strong>.</p></div>
+            <div class="b-stats">
+              <div><b class="num">200</b><span>COIN</span></div>
+              <div><b class="num">4</b><span>HANDS</span></div>
+              <div class="zero"><b class="num">0/5</b><span>QUEUE</span></div>
+            </div>
+            <div class="b-fronts">
+              <div class="front watched">
+                <div class="f-head"><span class="f-name">The Iron Hand</span><span class="f-clock">0/10</span></div>
+                <div class="f-bar" style="--fill:0%"></div>
+                <div class="f-doing">burning waystations, one a week</div>
+                <div class="f-tags"><span class="tag eye">WATCHED</span></div>
+              </div>
+              <div class="front">
+                <div class="f-head"><span class="f-name">The Ninth Watch</span><span class="f-clock">?</span></div>
+                <div class="f-bar fog"></div>
+                <div class="f-doing">sinking a shaft nobody was asked about</div>
+                <div class="f-tags"><span class="tag blind">NO EYES</span></div>
+              </div>
+              <div class="front">
+                <div class="f-head"><span class="f-name">The Quiet Choir</span><span class="f-clock">?</span></div>
+                <div class="f-bar fog"></div>
+                <div class="f-doing">singing at the barrow mouth, in shifts</div>
+                <div class="f-tags"><span class="tag blind">NO EYES</span></div>
+              </div>
+            </div>
+            <div class="b-watch">WATCHING · <b>THE IRON HAND</b></div>
+          </div>
+        </div>
+      </div>
+      <div class="modalwrap">
+        <div class="modal-h"><b>Picker</b><span>three questions · the player answered the first one by typing over it</span></div>
+        <div class="qrow">
+          <div class="q">
+            <span class="q-chip">Watch</span>
+            <span class="q-ask">Where do you point your eyes? Only the watched front gives you real numbers.</span>
+            <span class="q-ans"><span class="tick">▸</span><span class="txt typed">we leave them be, the new lord is here, and it is a time to eat, drink, and be merry, throw a party in the hopes the towns people procreate rapidly, have the priests light fires to the gods so the babies may grow and be useful fast!<em>typed, not picked — the first improvised order of the game</em></span></span>
+          </div>
+          <div class="q">
+            <span class="q-chip">Order 1</span>
+            <span class="q-ask">What do the four hands do?</span>
+            <span class="q-ans"><span class="tick">▸</span><span class="txt">Fortify Fen's Reach — 50</span></span>
+          </div>
+          <div class="q">
+            <span class="q-chip">Order 2</span>
+            <span class="q-ask">Second order. Or stop at one.</span>
+            <span class="q-ans"><span class="tick">▸</span><span class="txt">Invest in the holding — 40</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================== 2. THE FEAST ======= -->
+  <section class="frame" id="s2" aria-label="Scene 2: the feast resolves">
+    <div class="win">
+      <div class="titlebar">
+        <div class="dots"><i></i><i></i><i></i></div>
+        <div class="tb-path"><b>TEST TWO</b> — /elsewhere</div>
+        <div class="tb-tag">DAY 1 · +8h</div>
+      </div>
+      <div class="panes">
+        <div class="chat">
+          <p class="eyebrow">Turn 2 · the fires burned, not as high as you wanted</p>
+          <div class="priced">
+            <div class="priced-h">How the party was priced</div>
+            <dl>
+              <dt>improvise</dt><dd>60 coin · 2 hands · target <em>the Quiet Choir</em></dd>
+              <dt>grants</dt><dd>invest 2 — babies are population, population is hands</dd>
+              <dt>beholden</dt><dd>true — you gave their priests the fire</dd>
+            </dl>
+            <p class="why">The Choir were the only faction with priests, so the fires pointed at them. Ambition read as festival-scale, not royal-wedding-scale, so 60 of 200 rather than the purse.</p>
+          </div>
+          <div class="msg">
+            <div class="who"><i></i>Claude</div>
+            <div class="beat part">
+              <div class="beat-txt"><b>◐ The feast — partial</b>
+                <span>The ale went round and the priests came. What didn't happen is the bit you paid for.</span>
+              </div>
+            </div>
+          </div>
+          <div class="roll">roll <b>3</b>   +2 receptive   −0 overreach   =  <b>5</b>      <span>(8 lands · 5 partial)</span>
+granted: <span class="hit">invest 1</span> · <span class="hit">beholden</span></div>
+          <div class="narr">
+            <p>A roll of 3 is a feast where the fiddler is drunk by the second hour, two men fight over a coat, and most of the reach goes home alone and early. <strong>Half a harvest of goodwill and a quarter of the babies.</strong></p>
+            <p>But the Quiet Choir is softer toward you now — aggression down. <em>That was free. You didn't ask for it; the engine gave it to you for the gesture.</em></p>
+            <p><strong>All three fronts gained a segment.</strong> From the hill you saw movement everywhere and detail nowhere.</p>
+          </div>
+        </div>
+        <div class="boardpane">
+          <div class="board">
+            <div class="b-mast">
+              <div class="b-logo"><span>ELSEWHERE</span><em>IDLE WORLD IN CC</em></div>
+              <h3>Fen's Reach</h3>
+              <div class="b-meta"><span>day 1</span><span class="lit">intact</span><span>tick 1</span></div>
+            </div>
+            <div class="b-horizon"><p class="q">Nothing is confirmed from anywhere. The road, the shaft and the barrow all sound like the better part of a week — and one of them is lying.</p></div>
+            <div class="b-stats">
+              <div><b class="num">152</b><span>COIN</span></div>
+              <div><b class="num">3</b><span>HANDS</span></div>
+              <div><b class="num">2/5</b><span>QUEUE</span></div>
+            </div>
+            <div class="b-fronts">
+              <div class="front">
+                <div class="f-head"><span class="f-name">The Iron Hand</span><span class="f-clock">~1</span></div>
+                <div class="f-bar fog"></div>
+                <div class="f-doing">burning waystations, one a week</div>
+                <div class="f-tags"><span class="tag blind">RUMOUR</span></div>
+              </div>
+              <div class="front">
+                <div class="f-head"><span class="f-name">The Ninth Watch</span><span class="f-clock">~1</span></div>
+                <div class="f-bar fog"></div>
+                <div class="f-doing">sinking a shaft nobody was asked about</div>
+                <div class="f-tags"><span class="tag blind">RUMOUR</span></div>
+              </div>
+              <div class="front">
+                <div class="f-head"><span class="f-name">The Quiet Choir</span><span class="f-clock">~1</span></div>
+                <div class="f-bar fog"></div>
+                <div class="f-doing">singing at the barrow mouth, in shifts</div>
+                <div class="f-tags"><span class="tag blind">RUMOUR</span><span class="tag dis">BEHOLDEN</span></div>
+              </div>
+            </div>
+            <div class="b-watch">WATCHING · <b>ALL THREE, FROM THE HILL</b></div>
+          </div>
+        </div>
+      </div>
+      <div class="modalwrap">
+        <div class="modal-h"><b>Picker</b><span>the player typed over question two, and took the biggest swing in the game on question three</span></div>
+        <div class="qrow">
+          <div class="q">
+            <span class="q-chip">Watch</span>
+            <span class="q-ask">Eyes on something, or stay on the hill?</span>
+            <span class="q-ans"><span class="tick">▸</span><span class="txt">The Iron Hand<em>shortest clock on the board — the road goes back under observation</em></span></span>
+          </div>
+          <div class="q">
+            <span class="q-chip">Order 3</span>
+            <span class="q-ask">Add a third order behind the walls and the investment?</span>
+            <span class="q-ans"><span class="tick">▸</span><span class="txt typed">having eaten, drank (too much), and maybe not been merry enough, in the morning the hands that can move proceed to walk towards the iron hand, pantsless and erect, ready to duel and duo with their, erm, mighty swords</span></span>
+          </div>
+          <div class="q">
+            <span class="q-chip">The feast</span>
+            <span class="q-ask">It half-landed. Do you push it?</span>
+            <span class="q-ans"><span class="tick">▸</span><span class="txt">MEGA PROJECT — all 152<em>spends the entire purse · lands enormous or mutates · loses on average</em></span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================== 3. THE ROAD STOPS == -->
+  <section class="frame" id="s3" aria-label="Scene 3: day 2, the road stops">
+    <div class="win">
+      <div class="titlebar">
+        <div class="dots"><i></i><i></i><i></i></div>
+        <div class="tb-path"><b>TEST TWO</b> — /elsewhere</div>
+        <div class="tb-tag">DAY 2 · +24h</div>
+      </div>
+      <div class="panes">
+        <div class="chat">
+          <p class="eyebrow">Turn 3 · the pantsless men came back. all of them.</p>
+          <div class="priced">
+            <div class="priced-h">How the march was priced</div>
+            <dl>
+              <dt>improvise</dt><dd>20 coin · 2 hands · target <em>the Iron Hand</em></dd>
+              <dt>perilous</dt><dd>true — a bad roll and those hands do not come home</dd>
+              <dt>grants</dt><dd>disrupt 3 · gain 25 if there was anything portable</dd>
+            </dl>
+            <p class="why">Cheap in coin, expensive in dignity. Raiders sit at openness 6 — the most receptive faction on the board — so a naked provocation was a better bet than it sounds.</p>
+          </div>
+          <div class="msg">
+            <div class="who"><i></i>Claude</div>
+            <div class="beat part">
+              <div class="beat-txt"><b>◐ The morning after — partial</b>
+                <span>A roll of 2 on a perilous order is where you lose people. You didn't lose anybody.</span></div>
+            </div>
+          </div>
+          <div class="roll">roll <b>2</b>   +3 receptive   =  <b>5</b>
+granted: <span class="hit">disrupt 2</span>
+gain <span class="hit">19 coin</span> · hands_lost <b>0.0</b></div>
+          <div class="narr">
+            <p>Raiders do not put a blade through a naked man walking uphill at them at dawn. <strong>They laughed. Then they traded.</strong> You came home 19 coin richer than you left, which is not how duels normally conclude.</p>
+          </div>
+          <div class="beat ok"><div class="beat-txt"><b>✅ Walls and shutters — ok</b><span>roll 5 · 50 coin · fortify 3</span></div></div>
+          <div class="beat ok"><div class="beat-txt"><b>✅ Coin into the reach — ok</b><span>roll 5 · 40 coin · invest running</span></div></div>
+          <p class="teach">Watched is −1 to a front's roll. Disrupted is −2 more. Stack them and a clock's rate goes to <em>zero</em> — not slower, stopped.</p>
+          <div class="roll">The Iron Hand, three ticks running:
+roll 3  +2 expansive  −1 watched              =  4  ✗
+roll <span class="hit">6</span>  +2 expansive  −1 watched  −2 disrupt  =  5  ✗
+roll 1  +2 expansive  −1 watched  −2 disrupt  =  0  ✗</div>
+          <div class="narr"><p>That middle line is the beat. <strong>They rolled a 6 and still failed.</strong></p></div>
+        </div>
+        <div class="boardpane">
+          <div class="board">
+            <div class="b-mast">
+              <div class="b-logo"><span>ELSEWHERE</span><em>IDLE WORLD IN CC</em></div>
+              <h3>Fen's Reach</h3>
+              <div class="b-meta"><span>day 2</span><span class="lit">intact</span><span>tick 4</span></div>
+            </div>
+            <div class="b-horizon"><p>The Iron Hand is <strong>not on the horizon at all</strong> — nothing is coming down that road while you are watching it.</p></div>
+            <div class="b-stats">
+              <div><b class="num">99</b><span>COIN</span></div>
+              <div><b class="num">3.5</b><span>HANDS</span></div>
+              <div><b class="num">1/5</b><span>QUEUE</span></div>
+            </div>
+            <div class="b-fronts">
+              <div class="front watched">
+                <div class="f-head"><span class="f-name">The Iron Hand</span><span class="f-clock">1/10</span></div>
+                <div class="f-bar" style="--fill:10%"></div>
+                <div class="f-doing">burning waystations, one a week</div>
+                <div class="f-tags"><span class="tag eye">WATCHED</span><span class="tag dis">DISRUPT 2</span><span class="tag dis">STALLED</span></div>
+              </div>
+              <div class="front">
+                <div class="f-head"><span class="f-name">The Ninth Watch</span><span class="f-clock">?</span></div>
+                <div class="f-bar fog"></div>
+                <div class="f-doing">sinking a shaft nobody was asked about</div>
+                <div class="f-tags"><span class="tag blind">NO EYES</span></div>
+              </div>
+              <div class="front">
+                <div class="f-head"><span class="f-name">The Quiet Choir</span><span class="f-clock">?</span></div>
+                <div class="f-bar fog"></div>
+                <div class="f-doing">singing at the barrow mouth, in shifts</div>
+                <div class="f-tags"><span class="tag blind">NO EYES</span><span class="tag dis">BEHOLDEN</span></div>
+              </div>
+            </div>
+            <div class="b-watch">WATCHING · <b>THE IRON HAND</b> · MEGA LOADED</div>
+          </div>
+        </div>
+      </div>
+      <div class="modalwrap">
+        <div class="modal-h"><b>Picker</b><span>the mega is still in the queue — every choice here is about what goes in front of it</span></div>
+        <div class="qrow">
+          <div class="q">
+            <span class="q-chip">Watch</span>
+            <span class="q-ask">Your eyes are the only thing freezing the road. Move them?</span>
+            <span class="q-ans"><span class="tick">▸</span><span class="txt">The Quiet Choir<em>about to receive every coin in the reach — worth seeing what they do with it</em></span></span>
+          </div>
+          <div class="q">
+            <span class="q-chip">The mega</span>
+            <span class="q-ask">152 staked, scale 1. Let it fly?</span>
+            <span class="q-ans"><span class="tick">▸</span><span class="txt">Keep it, and put a scout in front of it<em>the stake had to be hand-protected — re-queueing would have re-priced it to 99 and cost a scale</em></span></span>
+          </div>
+          <div class="q">
+            <span class="q-chip">Order 2</span>
+            <span class="q-ask">Anything else behind it?</span>
+            <span class="q-ans"><span class="tick">▸</span><span class="txt typed">The returning ... naked traders? Build an altar to the choir, named The Erect Champions, stating that all erections are good erections, bront.</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================== 4. BOXCARS ========= -->
+  <section class="frame" id="s4" aria-label="Scene 4: day 3, boxcars">
+    <div class="win">
+      <div class="titlebar">
+        <div class="dots"><i></i><i></i><i></i></div>
+        <div class="tb-path"><b>TEST TWO</b> — /elsewhere</div>
+        <div class="tb-tag">DAY 3 · THE MEGA</div>
+      </div>
+      <div class="panes">
+        <div class="chat">
+          <p class="eyebrow">Turn 4 · every coin in the reach, on one throw</p>
+          <div class="beat mega">
+            <div class="beat-txt"><b>🎲 The great work — LANDED</b>
+              <span>The maximum the dice can produce. Twelve.</span></div>
+          </div>
+          <div class="roll">2d6 = <span class="hit">12</span>    +1 scale    −2 drift    =  <b>11</b>      <span>(9 lands)</span>
+spent <b>152</b> · wipe <span class="hit">5</span></div>
+          <div class="narr">
+            <p>The drift penalty didn't matter. The thin scale didn't matter. <strong>The Quiet Choir is back to clock 0</strong> — a wipe of 5 against a clock of 2 doesn't reverse their progress, it erases the whole undertaking.</p>
+            <p>The disrupt that came with it is <strong>4</strong>, the biggest number on the board, running twenty-four ticks. Their aggression drops to 1. <em>They would roll thirteen more times and never move a segment again. They would roll sixes. It would not matter.</em></p>
+          </div>
+          <div class="beat part">
+            <div class="beat-txt"><b>◐ The Erect Champions — partial</b>
+              <span>roll 4 +3 receptive = 7, needed 8. One short, and it still gave three things: invest 1 · fortify 1 · beholden.</span></div>
+          </div>
+          <div class="narr">
+            <p>The altar stands. The Choir's priests tend it <strong>without being asked</strong> — that is the known fact in the ledger, and it is why the barrow work went so well a tick later.</p>
+          </div>
+          <div class="beat nil">
+            <div class="beat-txt"><b>↩ The shaft — refund</b>
+              <span>roll 2, drift −1, total 1. Your scout went down and came back with nothing. Nobody tells you why. 30 coin returned.</span></div>
+          </div>
+          <div class="priced">
+            <div class="priced-h">How the altar was priced</div>
+            <dl>
+              <dt>improvise</dt><dd>40 coin · 1 hand · target <em>the Quiet Choir</em></dd>
+              <dt>grants</dt><dd>invest 2 (pilgrims) · fortify 1 (divine sponsorship)</dd>
+            </dl>
+            <p class="why">Put deliberately <em>before</em> the mega in the queue — the mega zeroes the purse and every hand, so a 40-coin altar behind it could never have been paid for.</p>
+          </div>
+        </div>
+        <div class="boardpane">
+          <div class="board">
+            <div class="b-mast">
+              <div class="b-logo"><span>ELSEWHERE</span><em>IDLE WORLD IN CC</em></div>
+              <h3>Fen's Reach</h3>
+              <div class="b-meta"><span>day 3</span><span class="lit">intact</span><span>tick 7</span></div>
+            </div>
+            <div class="b-horizon"><p>The barrow is <strong>eighteen days</strong> out and empty. The road and the shaft have gone dark.</p></div>
+            <div class="b-stats">
+              <div class="zero"><b class="num">0</b><span>COIN</span></div>
+              <div><b class="num">2</b><span>HANDS</span></div>
+              <div class="zero"><b class="num">0/5</b><span>QUEUE</span></div>
+            </div>
+            <div class="b-fronts">
+              <div class="front">
+                <div class="f-head"><span class="f-name">The Iron Hand</span><span class="f-clock">?</span></div>
+                <div class="f-bar fog"></div>
+                <div class="f-doing">burning waystations, one a week</div>
+                <div class="f-tags"><span class="tag blind">NO EYES</span><span class="tag dis">DISRUPT 2</span></div>
+              </div>
+              <div class="front">
+                <div class="f-head"><span class="f-name">The Ninth Watch</span><span class="f-clock">?</span></div>
+                <div class="f-bar fog"></div>
+                <div class="f-doing">sinking a shaft nobody was asked about</div>
+                <div class="f-tags"><span class="tag blind">NO EYES</span></div>
+              </div>
+              <div class="front watched">
+                <div class="f-head"><span class="f-name">The Quiet Choir</span><span class="f-clock">0/10</span></div>
+                <div class="f-bar" style="--fill:0%"></div>
+                <div class="f-doing">singing at the barrow mouth, in shifts</div>
+                <div class="f-tags"><span class="tag eye">WATCHED</span><span class="tag dis">DISRUPT 4</span><span class="tag dis">AGGR 1</span></div>
+              </div>
+            </div>
+            <div class="b-watch">WATCHING · <b>THE QUIET CHOIR</b></div>
+          </div>
+        </div>
+      </div>
+      <div class="modalwrap">
+        <div class="modal-h"><b>Picker</b><span>empty purse, empty queue — and an empty queue earns nothing</span></div>
+        <div class="qrow">
+          <div class="q">
+            <span class="q-chip">Watch</span>
+            <span class="q-ask">Where do your eyes go?</span>
+            <span class="q-ans"><span class="tick">▸</span><span class="txt">The Ninth Watch<em>the one front never once confirmed — the scout had found nothing</em></span></span>
+          </div>
+          <div class="q">
+            <span class="q-chip">Money</span>
+            <span class="q-ask">You have 0 coin. How do you get paid?</span>
+            <span class="q-ans"><span class="tick">▸</span><span class="txt">Trade with the Iron Hand — 20<em>openness 6 pays about 72 · the people who laughed at the naked men</em></span></span>
+          </div>
+          <div class="q">
+            <span class="q-chip">Order 2</span>
+            <span class="q-ask">Second order behind it. You have 2 hands.</span>
+            <span class="q-ans"><span class="tick">▸</span><span class="txt typed">have one hand, and one very buxom maiden, deliver a handmade erectile function statue to the quiet choir</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================== 5. THE QUILTS ====== -->
+  <section class="frame" id="s5" aria-label="Scene 5: day 5, the quilt economy">
+    <div class="win">
+      <div class="titlebar">
+        <div class="dots"><i></i><i></i><i></i></div>
+        <div class="tb-path"><b>TEST TWO</b> — /elsewhere</div>
+        <div class="tb-tag">DAY 5 · +48h</div>
+      </div>
+      <div class="panes">
+        <div class="chat">
+          <p class="eyebrow">Turn 5 · the quilts worked. the statue did not.</p>
+          <div class="beat ok">
+            <div class="beat-txt"><b>✅ Business with the people who laughed at us — ok</b>
+              <span>roll 5 · drift 0 · cost 20 · <strong>gain 72</strong>. Clean landing. Openness 6 is a money printer and the player found it.</span></div>
+          </div>
+          <div class="beat nil">
+            <div class="beat-txt"><b>↩ The statue — refund</b>
+              <span>roll <strong>1</strong>, +3 receptive = 4, needed 5. A natural 1. It never arrived.</span></div>
+          </div>
+          <div class="narr">
+            <p>Somewhere between Fen's Reach and the barrow, a hand and a very buxom maiden did not successfully deliver a handmade erectile function statue to a congregation of zealots. <em>The ledger records no reason. It is not going to start now.</em></p>
+          </div>
+          <div class="beat part">
+            <div class="beat-txt"><b>◐ The quilts — partial</b>
+              <span>roll 3 +3 = 6, needed 8 · gain 26 · invest 1 · beholden</span></div>
+          </div>
+          <div class="narr">
+            <p>Half-landed and still earned. <strong>Iron Hand riders have been seen on the coast road with Fen's Reach quilts over their saddles</strong> — that is the known fact, and it is why their aggression dropped to 2.</p>
+            <p><em>You cannot burn a waystation you buy your bedding from.</em></p>
+          </div>
+          <div class="priced">
+            <div class="priced-h">How the quilts were priced</div>
+            <dl>
+              <dt>improvise</dt><dd>0 coin · 1 hand · target <em>the Iron Hand</em></dd>
+              <dt>why zero</dt><dd>the purse was at 0 — a free order fills the queue without going into the hole</dd>
+              <dt>grants</dt><dd>invest 2 · beholden · gain 35</dd>
+            </dl>
+            <p class="why">The statue was priced at 0 for the same reason. Both were handmade, and "handmade" is the word that makes an order cost nothing but hands.</p>
+          </div>
+        </div>
+        <div class="boardpane">
+          <div class="board">
+            <div class="b-mast">
+              <div class="b-logo"><span>ELSEWHERE</span><em>IDLE WORLD IN CC</em></div>
+              <h3>Fen's Reach</h3>
+              <div class="b-meta"><span>day 5</span><span class="lit">intact</span><span>tick 13</span></div>
+            </div>
+            <div class="b-horizon"><p>The diggers hit whatever is down there in about <strong>ten days</strong> — and the disrupt holding the road runs out next tick.</p></div>
+            <div class="b-stats">
+              <div><b class="num">116</b><span>COIN</span></div>
+              <div class="full"><b class="num">10</b><span>HANDS</span></div>
+              <div class="zero"><b class="num">0/5</b><span>QUEUE</span></div>
+            </div>
+            <div class="b-fronts">
+              <div class="front">
+                <div class="f-head"><span class="f-name">The Iron Hand</span><span class="f-clock">?</span></div>
+                <div class="f-bar fog"></div>
+                <div class="f-doing">burning waystations, one a week</div>
+                <div class="f-tags"><span class="tag blind">NO EYES</span><span class="tag dis">BEHOLDEN</span></div>
+              </div>
+              <div class="front watched">
+                <div class="f-head"><span class="f-name">The Ninth Watch</span><span class="f-clock">5/10</span></div>
+                <div class="f-bar" style="--fill:50%"></div>
+                <div class="f-doing">sinking a shaft nobody was asked about</div>
+                <div class="f-tags"><span class="tag eye">WATCHED</span></div>
+              </div>
+              <div class="front">
+                <div class="f-head"><span class="f-name">The Quiet Choir</span><span class="f-clock">0</span></div>
+                <div class="f-bar" style="--fill:0%"></div>
+                <div class="f-doing">singing at the barrow mouth, in shifts</div>
+                <div class="f-tags"><span class="tag dis">DISRUPT 4</span><span class="tag dis">AT THE FLOOR</span></div>
+              </div>
+            </div>
+            <div class="b-watch">WATCHING · <b>THE NINTH WATCH</b></div>
+          </div>
+        </div>
+      </div>
+      <div class="modalwrap">
+        <div class="modal-h"><b>Picker</b><span>the last picker of the game — and the answer that ended it</span></div>
+        <div class="qrow">
+          <div class="q">
+            <span class="q-chip">Watch</span>
+            <span class="q-ask">The disrupt on the road expires next tick. Where do your eyes go?</span>
+            <span class="q-ans"><span class="tick">▸</span><span class="txt typed">the entire reach is shocked by the advancement in erect quilt technology and the village puts their hands to both having erections and making quilts. All that matters to the hands and buxom maidens is erections and quilts for 72 HOURS<em>typed over the watch question — so the eyes stayed on the shaft, and the road came off the leash</em></span></span>
+          </div>
+          <div class="q">
+            <span class="q-chip">The road</span>
+            <span class="q-ask">116 coin, 10 hands. What do you spend on the road?</span>
+            <span class="q-ans"><span class="tick">▸</span><span class="txt">Nothing on the road — spend it on the shaft<em>disrupt the Ninth Watch, 60</em></span></span>
+          </div>
+          <div class="q">
+            <span class="q-chip">Order 2</span>
+            <span class="q-ask">Second order behind that?</span>
+            <span class="q-ans"><span class="tick">▸</span><span class="txt">Nothing — one order, bank the coin</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================== 6. SETTLED ========= -->
+  <section class="frame" id="s6" aria-label="Scene 6: day 8, settled">
+    <div class="win">
+      <div class="titlebar">
+        <div class="dots"><i></i><i></i><i></i></div>
+        <div class="tb-path"><b>TEST TWO</b> — /elsewhere</div>
+        <div class="tb-tag">DAY 8 · SETTLED</div>
+      </div>
+      <div class="panes">
+        <div class="chat">
+          <p class="eyebrow">Turn 6 · the mandate landed on the nose, and the world ended anyway</p>
+          <div class="beat ok">
+            <div class="beat-txt"><b>✅ The erect quilt mobilisation — ok</b>
+              <span>Eight hands out of ten. The engine docked a point for overreach, because committing your entire population to one industry is a stretch even when the industry is that one.</span></div>
+          </div>
+          <div class="roll">roll <span class="hit">6</span>   +3 receptive   −1 overreach   =  <b>8</b>      <span>(8 lands — exactly, on the nose)</span>
+gain <span class="hit">135 coin</span> · granted <span class="hit">invest 3</span> · <span class="hit">beholden</span></div>
+          <div class="narr">
+            <p><strong>The single most profitable act in the history of the reach, and it was quilts.</strong></p>
+          </div>
+          <div class="beat bad">
+            <div class="beat-txt"><b>⚠️ Everything we have against the shaft — misfire</b>
+              <span>roll 5, drift −1, total 4. Sixty coin, drift-penalised, and it bought absolutely nothing. The only order in eight days that returned literally nothing at all — and it was the one that cost the world.</span></div>
+          </div>
+          <div class="roll">The Iron Hand, from tick 14 with nothing against them:
+<b>6</b> ✓   <b>5</b> ✓   1 ✗   2 ✗   <b>4</b> ✓   <b>4</b> ✓   <b>5</b> ✓
+final:  roll 5  +2 expansive  +1 unwatched  =  <span class="hit">8</span>   →  <span class="hit">10/10</span></div>
+          <div class="narr">
+            <p>Five segments in the last stretch. On the last morning they rolled a 5 and <strong>the coast road closed.</strong></p>
+            <p><em>"The Iron Hand got what it wanted: to make the coast road impassable to anyone but them."</em></p>
+          </div>
+        </div>
+        <div class="boardpane">
+          <div class="board">
+            <div class="b-mast">
+              <div class="b-logo"><span>ELSEWHERE</span><em>IDLE WORLD IN CC</em></div>
+              <h3>Fen's Reach</h3>
+              <div class="b-meta"><span>day 8</span><span class="lit">intact</span><span>tick 22</span></div>
+            </div>
+            <div class="b-settled">
+              <span>THE WORLD SETTLED</span>
+              <p>The Iron Hand reached 10/10. The coast road is closed to everybody in the world except the people who sold them the blankets.</p>
+            </div>
+            <div class="b-stats">
+              <div><b class="num">209</b><span>COIN</span></div>
+              <div class="full"><b class="num">10</b><span>HANDS</span></div>
+              <div class="zero"><b class="num">0/5</b><span>QUEUE</span></div>
+            </div>
+            <div class="b-fronts">
+              <div class="front done">
+                <div class="f-head"><span class="f-name">The Iron Hand</span><span class="f-clock">10/10</span></div>
+                <div class="f-bar" style="--fill:100%"></div>
+                <div class="f-doing">the coast road is theirs</div>
+                <div class="f-tags"><span class="tag won">GOT WHAT IT WANTED</span><span class="tag dis">AGGR 1</span></div>
+              </div>
+              <div class="front watched">
+                <div class="f-head"><span class="f-name">The Ninth Watch</span><span class="f-clock">6/10</span></div>
+                <div class="f-bar" style="--fill:60%"></div>
+                <div class="f-doing">never found out what the old company stopped digging for</div>
+                <div class="f-tags"><span class="tag eye">HELD</span></div>
+              </div>
+              <div class="front">
+                <div class="f-head"><span class="f-name">The Quiet Choir</span><span class="f-clock">0/10</span></div>
+                <div class="f-bar" style="--fill:0%"></div>
+                <div class="f-doing">whatever is under the barrow is still under the barrow</div>
+                <div class="f-tags"><span class="tag dis">ERASED</span></div>
+              </div>
+            </div>
+            <div class="b-watch">STANDING · <b>INTACT</b> · WALLS NEVER TESTED</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================== 7. THE RECKONING === -->
+  <section class="frame" id="s7" aria-label="Scene 7: the reckoning">
+    <div class="opener">
+      <p class="eyebrow">The reckoning · the one moment the fog lifts</p>
+      <div class="scorewrap">
+        <div class="badge">
+          <b class="num">1019</b>
+          <span>REMEMBERED</span>
+          <em>badge: sun</em>
+        </div>
+        <div class="tally">
+          <p><strong>Fen's Reach stands.</strong> Standing intact, 209 coin, ten hands, five investments running, walls never once tested. <strong>Not a single hand lost in eight days</strong> — and two of those days involved naked men walking at raiders on purpose.</p>
+          <p>The player beat the apocalypse under the barrow with one throw of twelve. Held the diggers to 6 of 10 for a week. Made all three factions <strong>beholden</strong>, and not one of them ever laid a hand on the walls.</p>
+          <p><strong>They simply were not looking at the road.</strong></p>
+        </div>
+      </div>
+      <table class="fogtable">
+        <caption>What was happening in the rooms nobody was looking at</caption>
+        <thead>
+          <tr><th>When</th><th>The road</th><th>What the reach was looking at</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>day 1</td><td>0 → 1</td><td>the hill, generally, during a party</td></tr>
+          <tr class="froze"><td>days 2–3</td><td>frozen at 1</td><td>the Iron Hand, with a disrupt on</td></tr>
+          <tr><td>day 3</td><td>1 → 4</td><td>the barrow, and the biggest bet ever made</td></tr>
+          <tr><td>days 5–8</td><td>4 → 10</td><td>the shaft</td></tr>
+        </tbody>
+      </table>
+      <p class="lede"><strong>The Iron Hand advanced nine of their ten segments while unwatched.</strong> Three times the road stood still: exactly the three ticks somebody was watching it. Every other tick, it moved.</p>
+      <p class="lede">It is not a defeat, exactly. Nobody died. It is just that somewhere out past the waystations, a faction of raiders finished a job while the entire population of Fen's Reach was extremely busy, for seventy-two consecutive hours, with erections and quilts.</p>
+      <p class="sting">All erections are good erections, bront.</p>
+    </div>
+  </section>
+
+</div>
+
+<nav class="rail" id="rail" aria-label="Scenes">
+  <button data-t="s0" aria-current="true"><b>THE FRAME</b><span>how to read this</span></button>
+  <button data-t="s1"><b>DAY 1</b><span>the feast</span></button>
+  <button data-t="s2"><b>DAY 1 +8h</b><span>a roll of three</span></button>
+  <button data-t="s3"><b>DAY 2</b><span>the road stops</span></button>
+  <button data-t="s4"><b>DAY 3</b><span>boxcars</span></button>
+  <button data-t="s5"><b>DAY 5</b><span>the quilt economy</span></button>
+  <button data-t="s6"><b>DAY 8</b><span>settled</span></button>
+  <button data-t="s7"><b>RECKONING</b><span>the fog lifts</span></button>
+</nav>
+<p class="hint"><kbd>←</kbd><kbd>→</kbd> to move between scenes, or scroll sideways</p>
+
+<script>
+(function () {
+  var strip = document.getElementById('strip');
+  var rail = document.getElementById('rail');
+  var buttons = Array.prototype.slice.call(rail.querySelectorAll('button'));
+  var frames = buttons.map(function (b) { return document.getElementById(b.dataset.t); });
+
+  function go(i) {
+    i = Math.max(0, Math.min(frames.length - 1, i));
+    frames[i].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  }
+
+  buttons.forEach(function (b, i) {
+    b.addEventListener('click', function () { go(i); });
+  });
+
+  function current() {
+    var mid = strip.scrollLeft + strip.clientWidth / 2;
+    var best = 0, bestd = Infinity;
+    frames.forEach(function (f, i) {
+      var c = f.offsetLeft + f.offsetWidth / 2;
+      var d = Math.abs(c - mid);
+      if (d < bestd) { bestd = d; best = i; }
+    });
+    return best;
+  }
+
+  function mark() {
+    var i = current();
+    buttons.forEach(function (b, j) {
+      if (j === i) { b.setAttribute('aria-current', 'true'); }
+      else { b.removeAttribute('aria-current'); }
+    });
+  }
+
+  var t = null;
+  strip.addEventListener('scroll', function () {
+    if (t) { clearTimeout(t); }
+    t = setTimeout(mark, 90);
+  });
+
+  document.addEventListener('keydown', function (e) {
+    var tag = (e.target && e.target.tagName) || '';
+    if (tag === 'INPUT' || tag === 'TEXTAREA') { return; }
+    if (e.key === 'ArrowRight') { e.preventDefault(); go(current() + 1); }
+    else if (e.key === 'ArrowLeft') { e.preventDefault(); go(current() - 1); }
+    else if (e.key === 'Home') { e.preventDefault(); go(0); }
+    else if (e.key === 'End') { e.preventDefault(); go(frames.length - 1); }
+  });
+
+  mark();
+})();
+</script>
+
+</body></html>

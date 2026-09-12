@@ -75,6 +75,13 @@ four things that playing straight would never have touched.
   better demonstration of the same claim: the engine does not know what you are
   doing and rolls anyway.
 
+- **`demo.html` — a complete played game, scene by scene.** Eight in-world days of
+  Fen's Reach with the chat pane, the board and the picker in frame together, every
+  player line verbatim and every roll taken from the ledger. It is the fastest way to
+  understand what the game actually is, and it does the job no amount of prose was
+  doing. Shipped as its own page rather than inlined: it redefines `--bg`, `--panel`,
+  `--ink` and `--ember` on `:root`, which are the landing page's own tokens.
+
 - **Social cards and a favicon.** The page had a description and nothing else, so a
   shared link rendered as bare text everywhere except Substack. Adds Open Graph and
   Twitter tags, a 1200×630 card, and the Elsewhere mark as an SVG favicon with PNG

@@ -4,6 +4,10 @@
 
 ### 🌐 [https://netmobster.github.io/elsewhere-idle-cc/](https://netmobster.github.io/elsewhere-idle-cc/)
 
+**[▶ Watch a complete game, scene by scene](https://netmobster.github.io/elsewhere-idle-cc/demo.html)** — eight
+in-world days, the chat and the board side by side. Every line the player typed is
+verbatim; every roll comes from the engine's ledger.
+
 Two minutes a day. Three neighbours who each want something. One set of eyes, and
 three directions to point it.
 
@@ -235,6 +239,7 @@ each turn, which is nicer. That's an upgrade, not a requirement.
 | [`PRD-TRD.md`](PRD-TRD.md) | Design and technical spec. |
 | [`NOTES.md`](NOTES.md) | The build log, including everything that broke. |
 | [`CHANGELOG.md`](CHANGELOG.md) | The shipping record, release by release. |
+| [`demo.html`](demo.html) | A complete played game, scene by scene. |
 | [`resources.md`](resources.md) | Everything, linked and explained. |
 | [`installer.md`](installer.md) | The long-form setup, if the two lines above aren't enough. |
 | [`aboutjay.md`](aboutjay.md) | Who made this and why. |

@@ -87,6 +87,7 @@ python bench.py 12
 | file | what it is |
 |---|---|
 | [`index.html`](index.html) | The landing page, served at [https://netmobster.github.io/elsewhere-idle-cc/](https://netmobster.github.io/elsewhere-idle-cc/). Self-contained, no build step. |
+| [`demo.html`](demo.html) | A complete played game, scene by scene, at [/demo.html](https://netmobster.github.io/elsewhere-idle-cc/demo.html). Every player line verbatim, every roll from the ledger. |
 | [`README.md`](README.md) | The repo front page. Pitch, mechanics, the four surfaces, install, balance, lineage. |
 | [`PRD-TRD.md`](PRD-TRD.md) | Product and technical spec. The formulas, the contracts, the criteria, and the traps. |
 | [`CHANGELOG.md`](CHANGELOG.md) | The shipping record. What changed in each release, and what broke. |

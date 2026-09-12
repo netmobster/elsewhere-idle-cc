@@ -14,6 +14,13 @@ Site: https://netmobster.github.io/elsewhere-idle-cc/
 Repository: https://github.com/netmobster/elsewhere-idle-cc
 Genesis: https://seren-dm.lovable.app/ (SEREN — the engine, ledger and roll system)
 
+## See it played
+
+- [demo.html](https://netmobster.github.io/elsewhere-idle-cc/demo.html): One complete
+  game, eight in-world days, scene by scene — the chat, the board and the picker in
+  frame together. Every player line is verbatim and every roll is taken from the
+  engine's ledger. The fastest way to understand what this actually is.
+
 ## Core design
 
 - [README.md](README.md): The complete overview — mechanics, the four surfaces, the
