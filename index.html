@@ -95,7 +95,37 @@ nav .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px
 .navlinks{display:flex;gap:26px;align-items:center}
 .navlinks a{font-family:var(--caps);font-size:9.5px;letter-spacing:.3em;color:var(--mid)}
 .navlinks a:hover{color:var(--ink);border:0}
-@media(max-width:760px){.navlinks a.hide{display:none}}
+/* ---- mobile nav ---------------------------------------------------------
+   The bar used to keep every link, GITHUB and the four-dot hour picker in one
+   nowrap row. On a phone that collapses into an unreadable scrum, and the one
+   link worth tapping — the played game — was hidden entirely. */
+.burger{display:none;flex-direction:column;justify-content:center;gap:4px;
+  width:40px;height:40px;padding:0 9px;background:transparent;border:1px solid var(--edge);
+  border-radius:3px;cursor:pointer;flex:none}
+.burger i{display:block;height:1.5px;background:var(--ink);transition:transform .2s,opacity .2s}
+.burger[aria-expanded="true"] i:nth-child(1){transform:translateY(5.5px) rotate(45deg)}
+.burger[aria-expanded="true"] i:nth-child(2){opacity:0}
+.burger[aria-expanded="true"] i:nth-child(3){transform:translateY(-5.5px) rotate(-45deg)}
+.burger:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
+
+.drawer{display:none;flex-direction:column;border-top:1px solid var(--edge);
+  background:var(--bg);padding:6px 0 10px}
+.drawer a{display:block;padding:13px 24px;font-family:var(--caps);font-size:11px;
+  letter-spacing:.26em;color:var(--mid);border-bottom:1px solid var(--edge)}
+.drawer a:first-child{color:var(--ember)}
+.drawer a:active{background:var(--panel);color:var(--ink)}
+.drawer-hours{padding:16px 24px 4px;gap:12px}
+.drawer-hours .now{font-family:var(--caps);font-size:9px;letter-spacing:.3em;color:var(--soft)}
+
+@media(max-width:760px){
+  .navlinks{display:none}
+  .burger{display:flex}
+  .drawer[hidden]{display:none}
+  .drawer{display:flex}
+  /* Solid, not translucent. The blurred bar reads as a floating box over the
+     hero glow on a small screen, with a hard vertical seam where the glow ends. */
+  nav{background:var(--bg);backdrop-filter:none}
+}
 .hours{display:flex;align-items:center;gap:10px}
 .hours .now{font-family:var(--caps);font-size:9px;letter-spacing:.3em;color:var(--soft)}
 .hours .picker{display:flex;gap:8px;padding:5px 7px;border-radius:999px;border:1px solid var(--edge)}
@@ -234,11 +264,29 @@ footer .it{font-style:italic}
     </a>
     <div class="navlinks">
       <a class="hide" href="demo.html">DEMO</a><a class="hide" href="#how">HOW</a><a class="hide" href="#fog">FOG</a><a class="hide" href="#epilogue">EPILOGUE</a><a class="hide" href="#install">INSTALL</a><a class="hide" href="#source">SOURCE</a>
-      <a href="https://github.com/netmobster/elsewhere-idle-cc">GITHUB</a>
+      <a class="hide" href="https://github.com/netmobster/elsewhere-idle-cc">GITHUB</a>
       <div class="hours"><span class="now" id="hour-word">NIGHT</span>
         <div class="picker" role="group" aria-label="Hour of the world">
           <button data-mode="morning" aria-label="morning" title="morning"></button><button data-mode="day" aria-label="day" title="day"></button><button data-mode="sunset" aria-label="sunset" title="sunset"></button><button data-mode="night" aria-label="night" title="night"></button>
         </div>
+      </div>
+    </div>
+    <button class="burger" id="burger" aria-label="Menu" aria-expanded="false" aria-controls="drawer">
+      <i></i><i></i><i></i>
+    </button>
+  </div>
+  <div class="drawer" id="drawer" hidden>
+    <a href="demo.html">WATCH A GAME</a>
+    <a href="#how">HOW IT WORKS</a>
+    <a href="#fog">FOG</a>
+    <a href="#epilogue">THE EPILOGUE</a>
+    <a href="#install">INSTALL</a>
+    <a href="#source">THE SOURCE</a>
+    <a href="https://github.com/netmobster/elsewhere-idle-cc">GITHUB</a>
+    <div class="hours drawer-hours">
+      <span class="now" id="hour-word-m">NIGHT</span>
+      <div class="picker" role="group" aria-label="Hour of the world">
+        <button data-mode="morning" aria-label="morning" title="morning"></button><button data-mode="day" aria-label="day" title="day"></button><button data-mode="sunset" aria-label="sunset" title="sunset"></button><button data-mode="night" aria-label="night" title="night"></button>
       </div>
     </div>
   </div>
@@ -553,12 +601,41 @@ footer .it{font-style:italic}
     ['bsun','bsunglow'].forEach(function(id){var e=document.getElementById(id);e.setAttribute('cx',x);e.setAttribute('cy',y);});
   }
   function setMode(m){
-    html.dataset.mode=m; document.getElementById('hour-word').textContent=m.toUpperCase();
-    document.querySelectorAll('.hours button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.mode===m));});
+    html.dataset.mode=m;
+    // There are two pickers now — the bar and the drawer — and they must agree.
+    ['hour-word','hour-word-m'].forEach(function(id){
+      var e=document.getElementById(id); if(e) e.textContent=m.toUpperCase();
+    });
+    document.querySelectorAll('.picker button').forEach(function(b){b.setAttribute('aria-pressed',String(b.dataset.mode===m));});
     placeSun(m);
   }
-  document.querySelectorAll('.hours button').forEach(function(b){b.addEventListener('click',function(){setMode(b.dataset.mode);});});
+  document.querySelectorAll('.picker button').forEach(function(b){b.addEventListener('click',function(){setMode(b.dataset.mode);});});
   setMode(autoMode());
+
+  /* ---- the drawer -------------------------------------------------------- */
+  (function(){
+    var burger=document.getElementById('burger'), drawer=document.getElementById('drawer');
+    if(!burger||!drawer) return;
+    function set(open){
+      drawer.hidden=!open;
+      burger.setAttribute('aria-expanded',String(open));
+    }
+    burger.addEventListener('click',function(){ set(drawer.hidden); });
+    // Close on navigation. An anchor link does not reload, so without this the
+    // drawer stays open over the section it just jumped to.
+    drawer.querySelectorAll('a').forEach(function(a){
+      a.addEventListener('click',function(){ set(false); });
+    });
+    document.addEventListener('keydown',function(e){
+      if(e.key==='Escape' && !drawer.hidden){ set(false); burger.focus(); }
+    });
+    document.addEventListener('click',function(e){
+      if(drawer.hidden) return;
+      if(!drawer.contains(e.target) && !burger.contains(e.target)) set(false);
+    });
+    // The drawer only exists below 760px. Resizing past it must not strand it open.
+    addEventListener('resize',function(){ if(innerWidth>760) set(false); });
+  })();
 
   // sparks
   var g=document.getElementById('sparks'),NS='http://www.w3.org/2000/svg';

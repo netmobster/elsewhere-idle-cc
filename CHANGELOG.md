@@ -82,6 +82,15 @@ four things that playing straight would never have touched.
   doing. Shipped as its own page rather than inlined: it redefines `--bg`, `--panel`,
   `--ink` and `--ember` on `:root`, which are the landing page's own tokens.
 
+- **A real mobile nav.** The bar kept every section link, GitHub and the four-dot
+  hour picker in one `nowrap` row, which on a phone collapsed into an unreadable
+  scrum — and the section links were hidden outright below 760px, so the played game
+  was unreachable from a phone. There is now a hamburger and a drawer: all seven
+  links, the one worth tapping in ember at the top, and the hour picker inside it.
+  Closes on link tap, Escape, tapping outside, and on resize past the breakpoint.
+  The bar also goes solid on mobile — the blurred translucent version read as a
+  floating box over the hero glow, with a hard vertical seam where the glow ended.
+
 - **Social cards and a favicon.** The page had a description and nothing else, so a
   shared link rendered as bare text everywhere except Substack. Adds Open Graph and
   Twitter tags, a 1200×630 card, and the Elsewhere mark as an SVG favicon with PNG
