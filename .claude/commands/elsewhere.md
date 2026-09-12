@@ -5,7 +5,18 @@ argument-hint: [your orders in plain english, or blank to just see the state]
 
 Orders: **$ARGUMENTS**
 
-Game lives at `C:/Users/Lenovo/OneDrive/Desktop/PROJECTS/Elsewhere/`. Run everything from there.
+The game lives in the **repository root** — the directory containing `engine.py`,
+which is the parent of the `.claude/` folder this command ships in. Run every command
+from there. Do not assume a path; if the working directory is elsewhere, locate
+`engine.py` first and `cd` to it.
+
+If `python` is not on PATH, try `python3`. No packages are needed — standard library only.
+
+## First run
+
+If `state.json` does not exist, there is no world yet. Run `python engine.py new` to
+roll one, then continue from step 2 — there is nothing to tick on a world that has
+not started, and no ledger to narrate.
 
 ## The turn
 
