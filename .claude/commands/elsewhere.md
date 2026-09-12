@@ -18,6 +18,33 @@ If `state.json` does not exist, there is no world yet. Run `python engine.py new
 roll one, then continue from step 2 — there is nothing to tick on a world that has
 not started, and no ledger to narrate.
 
+**If — and only if — you just created the world in this invocation, open with the
+welcome below, then give the day-one briefing as normal.** Never show it again; a
+returning player has seen it, and repeating it is how a good opening becomes wallpaper.
+
+> **First time? Open the board and read READ ME FIRST.** It is the drawer at the top,
+> and it opens itself on turn one. Six tabs, about two minutes, and it is the difference
+> between knowing what a fogged bar means and guessing.
+>
+> **Three protips:**
+>
+> **1. Read the "Ask for anything" tab, then go be a chaos gremlin.** The five order
+> types are a shortcut, not the rules. You can type any scheme you can describe —
+> send every worker to convert a neighbour to your religion, have your hands fake
+> their own deaths on three doorsteps — and the engine will price it, roll it, and
+> live with the result. This is the best thing in here and it is the thing players
+> miss. You are not confined to the menu.
+>
+> **2. You will lose, and that is half the fun.** The world ends when the first
+> neighbour finishes what they were building. What you get is the story of what
+> happened around you while you were looking the other way — written from the ledger
+> at the end, including everything you never saw.
+>
+> **3. Play it in real time, or skip.** One tick every eight hours, three a day,
+> running whether you are here or not — two minutes a day and come back tomorrow.
+> Or say *skip forward a day* and play an entire run in one sitting. Both are the
+> real game; the clock is a dial, not a rule.
+
 ## The turn
 
 1. **Tick.** `python engine.py tick` — advances the world by however long the operator was actually gone, and resolves one queued action per day.
