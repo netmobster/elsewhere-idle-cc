@@ -15,8 +15,9 @@ If `python` is not on PATH, try `python3`. No packages are needed — standard l
 ## First run
 
 If `state.json` does not exist, there is no world yet. Run `python engine.py new` to
-roll one, then continue from step 2 — there is nothing to tick on a world that has
-not started, and no ledger to narrate.
+roll one, then **skip step 1 entirely** and continue from step 2. There is nothing to
+tick on a world that has not started: `engine.py tick` returns `{"ticks": 0}`, which
+reads in chat like something failed on the very first thing the player ever sees.
 
 **If — and only if — you just created the world in this invocation, open with the
 welcome below, then give the day-one briefing as normal.** Never show it again; a
@@ -57,7 +58,7 @@ returning player has seen it, and repeating it is how a good opening becomes wal
    - Coin / Hands / Queue line at the end
    - If more than ~12 beats, collapse into an era summary instead of a beat list
 4. **Render + republish** the sidebar: `python render.py`, then Artifact on `elsewhere-board.html`.
-   The board carries a 5-tab **Read me first** drawer (what is this / money and people / your orders / the big gamble / first turn). It opens automatically on a fresh world and collapses once the ledger has rows.
+   The board carries a 6-tab **Read me first** drawer (what is this / money and people / your orders / the big gamble / ask for anything / first turn). It opens automatically on a fresh world and collapses once the ledger has rows.
    **Never publish `sidebar.html`** — that path is a retired artifact whose
    stored name is a dead placeholder and cannot be renamed.
 
@@ -70,7 +71,20 @@ returning player has seen it, and repeating it is how a good opening becomes wal
    - A front with `rumour: true` and no estimate gets no number, ever. Phrase the
      absence as the threat: *"Nothing has come back from the coast road in a week."*
    - Never use a `hours`/`days` value the horizon did not give you.
-5. **Take their orders.** Translate plain English into engine calls:
+5. **Fire the modal. Do not wait to be asked for it.**
+
+   `AskUserQuestion` is the turn — see **The picker rule** below, which is not
+   optional and not a fallback. Every turn ends in a picker, unprompted, as the last
+   thing in your message. A briefing that stops and waits for typed orders is a
+   failed turn: the operator has to type the word "modal" to get the interface they
+   already asked for, every single turn.
+
+   Ask up to three questions in ONE call — *where do the eyes go*, *first order*,
+   *second order or stop at one* — priced from `python engine.py options` so every
+   choice shows what it actually costs. The final option on the FIRST question is
+   always the escape hatch.
+
+   **Then** translate whatever they choose — or type — into engine calls:
    - `python engine.py watch "<faction>"` — fuzzy, matches on name
    - `python engine.py queue "what|front-id|kind" ...` — up to 5. Kinds:
      `disrupt` 60 · `fortify` 50 · `trade` 20 · `scout` 30 · `invest` 40 ·
@@ -91,7 +105,10 @@ returning player has seen it, and repeating it is how a good opening becomes wal
 ## ⛔ The picker rule
 
 **The modal IS the interface.** The operator asked for a clicky turn and likes it.
-Use `AskUserQuestion` for every turn.
+Use `AskUserQuestion` for every turn — this is step 5, not a garnish on it.
+
+**Never wait to be asked for the modal.** If the operator has to type "modal" to get
+their turn, the turn was broken before they typed it.
 
 **But it takes over the text input**, so while it is up they cannot send feedback,
 report a bug, or ask a question — only answer or dismiss. A dismissal usually means
