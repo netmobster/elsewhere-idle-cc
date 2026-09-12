@@ -8,6 +8,91 @@ Dates are the author's local time.
 
 ---
 
+## v1.1.0 — the chaos goblin release — 2026-09-12
+
+The second playtest was played entirely sideways — a coronation feast thrown to
+make babies, a pantsless dawn duel against raiders, and a seventy-two hour
+municipal mandate on erections and quilts. It scored **1019 of 1000**, and it broke
+four things that playing straight would never have touched.
+
+### Fixed — engine
+
+- **`queue` destroyed a queued mega's stake.** The stake for a mega is the entire
+  purse *at queue time*. `queue` cleared the list and rebuilt it, re-pricing the mega
+  from whatever coin remained — so adding one 20-coin trade alongside a 152-coin mega
+  quietly turned it into a 20-coin mega. There was no way to append without paying
+  that. **New command: `add`**, which appends. `queue` still replaces.
+
+- **`improvise` always jumped the queue.** Every improvised order inserted at position
+  0, which is written down nowhere and silently reorders everything the player just
+  queued. It now appends like every other order. Pass `"next": true` to jump.
+
+- **Improvised `trade` and `scout` grants did nothing.** Only `disrupt`, `fortify` and
+  `invest` are ever read back out of `s["effects"]`. Granting a `trade` or a `scout`
+  appended an effect nothing consumes, so the order rolled, landed, reported success
+  and had no result. Both now resolve immediately, exactly as the menu versions do —
+  which also means *"send somebody to go and look"* is improvisable at all for the
+  first time.
+
+- **Nothing could improvise a net gain of people.** There was no `hands` grant. A
+  feast thrown to make babies is the most obvious improvised order in the game and it
+  had no mechanism behind it; it had to be proxied with `invest`. `hands` is now a
+  grant kind, capped at 10.
+
+### Fixed — the chronicle
+
+- **The chronicle renderer understood only headings, rules, bold and italic.** Table
+  rows and blockquote lines are ordinary non-empty lines, so they were swept into the
+  current paragraph and joined with spaces — a markdown table came out as one long
+  smear of pipes, and a blockquote came out as a literal `&gt;`.
+
+  This was not cosmetic. The chronicle quotes the player's own orders back at them,
+  which is the best thing in the file, and every one of those quotes was rendering
+  broken. `md_to_html` now handles tables, blockquotes and lists, and they are styled
+  to match the board rather than to browser defaults. Wide tables scroll inside
+  themselves instead of pushing the modal sideways.
+
+### Changed
+
+- **The modal is now every response, not every turn.** A briefing that ends in prose
+  and waits for typed orders means the player has to type the word "modal" to get the
+  interface they asked for. It is now the rule at the top of the command file, with
+  the cases enumerated, and the "Hold — I want to type" escape hatch has to bounce
+  straight back into a picker rather than answering and waiting.
+
+- **A one-time welcome on first run** — read the guide, then three protips: be a chaos
+  gremlin and ignore the menu, you will lose and that is the point, and the clock is a
+  dial so real-time and one-sitting are both the real game.
+
+- **First run no longer ticks a world with zero ticks.** It printed `{"ticks": 0}` as
+  the first thing a new player ever saw, which reads like a failure.
+
+- **The improvise contract is documented** in the command file — every field, every
+  grant kind, and which ones resolve immediately.
+
+### Known, not fixed
+
+Balance observations from the same run, recorded rather than patched, because one
+absurd playthrough is not a measurement:
+
+- **Openness dominates the improvise roll.** +3 from an open front against −1 for
+  committing your entire population. A perilous order rolled a 2 and came home
+  profitable with no casualties. *Perilous stopped meaning perilous.*
+- **Trade is roughly 3.6× with no downside** — the dominant line once you have one
+  open neighbour.
+- **Watch is a free 2-point swing**, and stacked with a disrupt it drives a front's
+  rate to literal zero. A front rolled a 6 and still failed to advance.
+- **An empty queue earns no interest, and nothing says so.** After spending everything
+  on a mega you can enter a soft-lock with no warning.
+
+### Verified
+
+`python bench.py 12` → **PASS 6/6**, unchanged. `sim.py` does not improvise, so the
+engine fixes do not touch the balance harness — which is itself worth noting as a
+gap: the four bugs above were all in code the bench never exercises.
+
+---
+
 ## v1.0.3 — first install test — 2026-09-11
 
 The first time the game was installed by someone who wasn't the person who wrote it.

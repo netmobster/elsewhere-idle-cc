@@ -728,8 +728,55 @@ def md_to_html(md):
             out.append("<p>" + inline(" ".join(para)) + "</p>")
             para.clear()
 
-    for raw in md.splitlines():
-        line = raw.rstrip()
+    def cells(line):
+        """Split a table row, dropping the empty edges left by the outer pipes."""
+        return [c.strip() for c in line.strip().strip("|").split("|")]
+
+    lines = md.splitlines()
+    i = 0
+    while i < len(lines):
+        line = lines[i].rstrip()
+
+        # A table. Every row is an ordinary non-empty line, so without this they
+        # all land in `para` and get joined with spaces into one long smear of
+        # pipes. Consume the whole block here instead.
+        if line.lstrip().startswith("|") and line.count("|") >= 2:
+            flush()
+            block = []
+            while i < len(lines) and lines[i].lstrip().startswith("|"):
+                block.append(lines[i].rstrip()); i += 1
+            body = [r for r in block
+                    if not set(r.replace("|", "").strip()) <= set("-: ")]
+            head, rest = (body[0], body[1:]) if len(body) > 1 else (None, body)
+            h = ['<table class="chtab">']
+            if head:
+                h.append("<thead><tr>" + "".join(
+                    "<th>" + inline(esc(c)) + "</th>" for c in cells(head)) + "</tr></thead>")
+            h.append("<tbody>" + "".join(
+                "<tr>" + "".join("<td>" + inline(esc(c)) + "</td>" for c in cells(r)) + "</tr>"
+                for r in rest) + "</tbody></table>")
+            out.append("".join(h))
+            continue
+
+        # A blockquote. The chronicle quotes the player's own orders back at them,
+        # which is the best thing in the file, so this is not a rare case.
+        if line.lstrip().startswith(">"):
+            flush()
+            block = []
+            while i < len(lines) and lines[i].lstrip().startswith(">"):
+                block.append(lines[i].lstrip()[1:].strip()); i += 1
+            out.append("<blockquote>" + inline(esc(" ".join(block).strip())) + "</blockquote>")
+            continue
+
+        if line.lstrip().startswith("- "):
+            flush()
+            items = []
+            while i < len(lines) and lines[i].lstrip().startswith("- "):
+                items.append(lines[i].lstrip()[2:].strip()); i += 1
+            out.append("<ul>" + "".join("<li>" + inline(esc(x)) + "</li>" for x in items) + "</ul>")
+            continue
+
+        i += 1
         if not line:
             flush()
         elif line.startswith("## "):
@@ -955,6 +1002,20 @@ dialog#epi{{max-width:680px;width:94vw;padding:0;max-height:92vh;border-radius:2
 .chron .chtitle{{font-family:var(--caps);font-weight:400;font-size:22px;letter-spacing:.05em;color:var(--ink);margin:0 0 6px}}
 .chron h3{{font-family:var(--caps);font-size:11px;letter-spacing:.26em;color:var(--ember);margin:26px 0 10px}}
 .chron p{{margin:0 0 13px;text-wrap:pretty}}
+/* The chronicle quotes the player's own orders back at them. That is the best
+   thing in the file, so it gets treated as a pull quote and not as a nested note. */
+.chron blockquote{{margin:0 0 15px;padding:10px 0 10px 18px;border-left:2px solid var(--ember);
+  color:var(--ink);font-style:italic;font-size:15px;line-height:1.5}}
+.chron ul{{margin:0 0 13px;padding-left:20px}}
+.chron li{{margin:0 0 5px}}
+/* A chronicle table is written by the narrator, so its width is unknown. Let it
+   scroll inside itself rather than pushing the modal sideways. */
+.chron .chtab{{display:block;overflow-x:auto;width:100%;border-collapse:collapse;
+  font-family:var(--caps);font-size:11.5px;letter-spacing:.04em;margin:0 0 15px;white-space:nowrap}}
+.chron .chtab th{{text-align:left;color:var(--soft);font-weight:400;letter-spacing:.2em;
+  text-transform:uppercase;font-size:9px;padding:0 16px 7px 0;border-bottom:1px solid var(--edge)}}
+.chron .chtab td{{padding:7px 16px 7px 0;color:var(--mid);border-bottom:1px solid var(--edge)}}
+.chron .chtab tr td:first-child{{color:var(--ink)}}
 .chron b{{color:var(--ink)}}
 .chron em{{color:var(--soft)}}
 .chron .rule{{height:1px;background:linear-gradient(to right,transparent,var(--edge),transparent);margin:22px 0}}

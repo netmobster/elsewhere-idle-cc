@@ -495,10 +495,32 @@ def resolve_improvised(s, rng, action, at):
     if power:
         for kind, value, ticks in action.get("grants", []):
             v = max(1, round(value * power))
-            s["effects"].append({"kind": kind,
-                                 "front": tgt if kind == "disrupt" else None,
-                                 "value": v, "until": s["tick"] + ticks})
-            granted.append(f"{kind} {v}")
+            # Only disrupt/fortify/invest are ever READ back out of s["effects"].
+            # Granting a "trade" or a "scout" used to append an effect nobody
+            # consumes, so the order landed, reported success, and did nothing.
+            # These resolve immediately, exactly as the menu versions do.
+            if kind == "trade":
+                paid = round((f["openness"] if f else 3) * 4 * v * power)
+                s["holding"]["coin"] += paid
+                gain += paid
+                granted.append(f"trade {paid} coin")
+            elif kind == "scout" and f:
+                add_fact(s, f'{f["name"]} stands at {f["clock"]}/{SEGMENTS}.', "known",
+                         "scouted, so this number is real")
+                granted.append("scout")
+            elif kind == "hands":
+                # There was no way to improvise a net gain of people. A feast
+                # thrown to make babies is the most obvious improvised order in
+                # the game and it had no mechanism behind it.
+                before = s["holding"]["hands"]
+                s["holding"]["hands"] = min(HANDS_CAP, before + v)
+                got = s["holding"]["hands"] - before
+                granted.append(f"hands +{got:g}")
+            else:
+                s["effects"].append({"kind": kind,
+                                     "front": tgt if kind == "disrupt" else None,
+                                     "value": v, "until": s["tick"] + ticks})
+                granted.append(f"{kind} {v}")
         if f and action.get("beholden"):
             f["openness"] = min(6, f["openness"] + (2 if power == 1.0 else 1))
             f["aggression"] = max(1, f["aggression"] - (2 if power == 1.0 else 1))
@@ -740,7 +762,7 @@ def last_known(s, f):
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("cmd", choices=["new", "tick", "ff", "queue", "watch",
-                                   "options", "horizon", "improvise", "status"])
+                                   "options", "horizon", "improvise", "status", "add"])
     p.add_argument("args", nargs="*")
     p.add_argument("--seed", type=int)
     p.add_argument("--now")
@@ -758,10 +780,19 @@ def main():
 
     s = load()
 
-    if a.cmd == "queue":
+    if a.cmd in ("queue", "add"):
+        # `queue` replaces the standing orders. `add` appends to them.
+        #
+        # Replace used to be the only path, and it silently destroyed a queued
+        # mega: the stake is the whole purse AT QUEUE TIME, so rebuilding the
+        # list re-prices it from whatever coin is left now. Adding one 20-coin
+        # trade alongside a 152-coin mega quietly turned the mega into a 20-coin
+        # mega. There was no way to append without paying that.
         s["watch_until"] = s.get("tick", 0) + WATCH_TICKS
-        s["queue"] = []
-        for spec in a.args[:QUEUE_SLOTS]:
+        if a.cmd == "queue":
+            s["queue"] = []
+        room = QUEUE_SLOTS - len(s["queue"])
+        for spec in a.args[:max(0, room)]:
             parts = spec.split("|")
             what = parts[0]
             tgt = parts[1] if len(parts) > 1 and parts[1] else s["watching"]
@@ -821,7 +852,13 @@ def main():
         spec["target"] = f["id"]
         spec["kind"] = "improvise"
         spec["clock_at_queue"] = f["clock"]
-        s["queue"].insert(0, spec)
+        # Improvised orders used to always insert at position 0, which is not
+        # written down anywhere and silently reorders everything the player just
+        # queued. Append like every other order; pass "next": true to jump.
+        if spec.pop("next", False):
+            s["queue"].insert(0, spec)
+        else:
+            s["queue"].append(spec)
         s["watch_until"] = s.get("tick", 0) + WATCH_TICKS
         save(s)
         print(json.dumps({"queued": spec["what"], "target": f["name"],

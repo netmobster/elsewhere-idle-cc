@@ -119,7 +119,10 @@ returning player has seen it, and repeating it is how a good opening becomes wal
 
    **Then** translate whatever they choose — or type — into engine calls:
    - `python engine.py watch "<faction>"` — fuzzy, matches on name
-   - `python engine.py queue "what|front-id|kind" ...` — up to 5. Kinds:
+   - `python engine.py queue "what|front-id|kind" ...` — REPLACES the queue. Up to 5.
+   - `python engine.py add "what|front-id|kind" ...` — APPENDS. Use this when they
+     are adding to orders that already exist; `queue` would re-price a standing mega.
+     Kinds:
      `disrupt` 60 · `fortify` 50 · `trade` 20 · `scout` 30 · `invest` 40 ·
      `mega` (costs the entire purse, min 150)
    - **MEGA PROJECT** — spends everything and either lands enormous or *mutates*.
@@ -182,6 +185,57 @@ brought; do not impose one.
 **Narrate, never arbitrate.** Every event in the story already happened and is already
 in the ledger. Do not decide anything while writing. If a roll surprised you, say so
 — being surprised is the point, and it is the proof the dice were real.
+
+
+## Improvising — the full contract
+
+When the player types a scheme, build it into `python engine.py improvise '<json>'`.
+
+```json
+{
+  "what":     "one line, what they are attempting",
+  "said":     "their exact words, verbatim",
+  "target":   "front-id",
+  "coin":     60,
+  "hands":    2,
+  "beholden": true,
+  "next":     false,
+  "grants":   [["disrupt", 2, 6], ["hands", 3, 0]]
+}
+```
+
+- **`said` is not optional.** It is the single best thing in the system — the
+  chronicle is written in the player's own voice because their exact words are in
+  every row. Always include it.
+- **`next`** puts the order at the front of the queue. Default is append, like every
+  other order. Only set it when they said *now*.
+- **`beholden`** raises the target's openness and lowers their aggression. Use it when
+  the scheme is genuinely generous or flattering to them, not when it merely worked.
+- **`hands >= 6` triggers an overreach penalty.** Committing the whole population is a
+  stretch and the engine charges for it. That is correct; do not route around it.
+
+**Grant kinds, and what each actually does:**
+
+| grant | effect |
+|---|---|
+| `disrupt` | slows the target front, `value` segments, for `ticks` |
+| `fortify` | raises the holding's defence for `ticks` |
+| `invest`  | raises income for `ticks` |
+| `trade`   | **immediate** coin, scaled by the target's openness |
+| `scout`   | **immediate** — writes the target's real clock as a `known` fact |
+| `hands`   | **immediate** net gain of people, capped at 10 |
+
+`trade`, `scout` and `hands` resolve the moment the order lands; their `ticks` value
+is ignored. The other three become timed effects.
+
+*These four were broken until the second playtest. `trade` and `scout` grants
+appended an effect nothing ever read, so the order reported success and did nothing.
+There was no `hands` grant at all — which meant a feast thrown to make babies, the
+most obvious improvised order in the game, had no mechanism behind it.*
+
+**Adding to a queue: use `add`, not `queue`.** `queue` replaces the standing orders,
+which re-prices a queued `mega` from current coin and silently destroys the stake.
+`add` appends.
 
 ## Rules
 
