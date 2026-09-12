@@ -55,32 +55,63 @@ on Tuesday. Your grain went to the village at whatever they'd pay. They were del
 The five orders are a **shortcut, not the rules**.
 
 You can type anything you can describe, and it becomes a real order with a real
-price and a real roll.
+price, a real roll, and real consequences. Here is an actual playthrough — *Fen's
+Reach*, eight days, seed `691420631`.
 
-> *"Send every worker to convert the Sundered Charter to our religion — pitch that
-> our God is a God of community and common interest."*
+Day two. The lord surveyed his hungover population and issued this:
 
-That happened. Here is what the engine did with it:
+> *"the hands that can move proceed to walk towards the Iron Hand, pantsless and
+> erect, ready to duel and duo with their, erm, mighty swords"*
+
+They rolled a **2**. On a perilous order. That is the number where men do not come
+home.
+
+Every one of them came home. They came home **nineteen coin richer**.
+
+The Iron Hand were raiders working toward a coast road that would belong to nobody
+but them — and they happened to roll maximum openness in that world. Openness turns
+out to mean that when a column of naked hungover men walks uphill at you at dawn with
+their swords out, you do not kill them. You laugh. Then you do business. Then you
+stop sending crews out on the dawn shift, because you cannot stop laughing.
+
+That was **disrupt 2 on the coast road, bought with nothing but dignity.**
+
+Later, the same lord committed the entire population to a single industry for
+seventy-two hours:
+
+> *"the entire reach is shocked by the advancement in erect quilt technology and the
+> village puts their hands to both having erections and making quilts"*
 
 ```
-d6 2   + receptive 3   − overreach 1   =  4      needed 5
+d6 6   + receptive 3   − overreach 1   =  8      needed 8
 ```
 
-Their openness of 6 made them genuinely receptive (+3). Committing *every single
-worker* triggered an overreach penalty (−1). The die came up 2. **One short.** The
-missionaries walked home wet and unconverted and the holding had no labour left.
+Eight hands of ten. The engine docked a point for overreach, because committing your
+whole population to one trade is a stretch even when the trade is that one. It landed
+**on the nose**: 135 coin, the single most profitable act in the reach's history.
 
-Then this happened:
+Nobody designed that move. Nobody wrote a rule for quilts. **It was in the numbers.**
 
-> *"Have one hand go to each neighbour, knock on the front door then pretend to
-> collapse dead, upon being admitted for treatment attempt to steal gold from the
-> market and run back to town, hopefully not dying too much."*
+### And then the part you did not see
 
-All three doors opened. All three collapses were believed. **135 coin**, stolen by
-three people pretending to die, because every neighbour in that particular world
-rolled maximum openness and generosity was the only exploitable thing in it.
+The Iron Hand advanced **nine of their ten segments while nobody was watching them.**
+The ledger is brutally consistent about it — the road stood still on exactly the three
+ticks somebody had eyes on it, and moved on every other one.
 
-Nobody designed that move. Nobody designed that exploit. It was in the numbers.
+The disrupt expired. The lord was offered a fresh one for 60 coin and spent it on the
+shaft instead, where it misfired and bought nothing. It is the only order in eight days
+that returned literally nothing, and it is the one that cost him the world.
+
+Final score **1019**. Two of three neighbours denied, an altar to the Erect Champions
+tended by priests nobody asked, and quilts on the saddle of every raider on the coast
+road — a road he no longer owns, closed to everybody on earth except the people who
+sold them the blankets.
+
+> *It is just that somewhere out past the waystations, a faction of raiders finished
+> a job while the entire population of Fen's Reach was extremely busy, for seventy-two
+> consecutive hours, with erections and quilts.*
+
+That paragraph is from the chronicle the game wrote itself, from the ledger, at the end.
 
 ---
 
@@ -155,12 +186,12 @@ The epilogue fires automatically: a badge with your score, and a **chronicle** �
 a real narrative history of your holding, written from the ledger, including every
 single thing you never saw.
 
-> *The lord did not lose because they were careless. They lost because their
-> attention was a single lantern in a valley with three rooms, and the world quietly
-> arranged for the thing that mattered to happen in whichever room the light was not.*
+> *It is not a defeat, exactly. Nobody died. Not one hand was lost in eight days,
+> and two of those days involved naked men walking at raiders on purpose.*
 
-That paragraph is true. The valley gained **twenty segments while unobserved** and
-the ledger can prove every one of them.
+That paragraph is true, and the ledger can prove every clause of it. The chronicle
+is written from the rows, not from memory — including the nine segments the Iron
+Hand gained on the exact ticks nobody was looking.
 
 This is the payoff, and it is why losing feels good.
 

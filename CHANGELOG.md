@@ -70,6 +70,16 @@ four things that playing straight would never have touched.
 - **The improvise contract is documented** in the command file — every field, every
   grant kind, and which ones resolve immediately.
 
+- **The sample playthrough on the README and the site is now Fen's Reach** — the
+  pantsless dawn duel and the quilt mandate, replacing the missionaries. It is a
+  better demonstration of the same claim: the engine does not know what you are
+  doing and rolls anyway.
+
+- **Social cards and a favicon.** The page had a description and nothing else, so a
+  shared link rendered as bare text everywhere except Substack. Adds Open Graph and
+  Twitter tags, a 1200×630 card, and the Elsewhere mark as an SVG favicon with PNG
+  fallbacks.
+
 ### Known, not fixed
 
 Balance observations from the same run, recorded rather than patched, because one

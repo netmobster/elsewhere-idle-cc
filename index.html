@@ -5,6 +5,28 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Elsewhere — an idle RPG that runs in Claude Code while you are gone</title>
 <meta name="description" content="An idle RPG that runs in Claude Code, in real time, whether you are there or not. Two minutes a day. Three neighbours who each want something. One set of eyes.">
+
+<!-- The mark, as the tab icon. SVG first for anything modern, PNG for the rest. -->
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="favicon-180.png">
+
+<!-- Social cards. Without these a shared link renders as bare text on X,
+     LinkedIn, Discord and Slack, which is most of where this gets posted. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Elsewhere">
+<meta property="og:url" content="https://netmobster.github.io/elsewhere-idle-cc/">
+<meta property="og:title" content="Elsewhere — an idle RPG that runs in Claude Code while you are gone">
+<meta property="og:description" content="Three neighbours, ten-segment clocks, and one set of eyes. The world advances in real time whether you are there or not. A Python engine rolls every outcome; the model narrates a result it did not choose.">
+<meta property="og:image" content="https://netmobster.github.io/elsewhere-idle-cc/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Three faction clocks. One reads 8/10 with eyes on it. Two are fogged and read a question mark.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Elsewhere — an idle RPG that runs in Claude Code while you are gone">
+<meta name="twitter:description" content="Those bars are not zero. They are unknown. That distinction is the whole game.">
+<meta name="twitter:image" content="https://netmobster.github.io/elsewhere-idle-cc/og.png">
+<meta name="theme-color" content="#0d0c0b">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Spectral:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@400&display=swap">
@@ -279,15 +301,17 @@ footer .it{font-style:italic}
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:40px 56px" class="in">
       <div style="display:flex;flex-direction:column;gap:20px">
-        <p class="quote">“Send every worker to convert the Sundered Charter to our religion — pitch that our God is a God of community and common interest.”</p>
-        <p class="dim">That happened. Here is what the engine did with it:</p>
-        <div class="roll num"><span><span class="k">d6 </span><span class="d">2</span></span><span><span class="k">+ receptive </span><span class="d">3</span></span><span><span class="k">− overreach </span><span class="d">1</span></span><span><span class="k">= </span><span class="d">4</span></span><span style="margin-left:auto"><span class="k">needed </span><span class="d">5</span></span></div>
-        <p class="dim">Their openness of 6 made them genuinely receptive (+3). Committing <em>every single worker</em> triggered an overreach penalty (−1). The die came up 2. <b>One short.</b> The missionaries walked home wet and unconverted and the holding had no labour left.</p>
+        <p class="quote">“the hands that can move proceed to walk towards the Iron Hand, pantsless and erect, ready to duel and duo with their, erm, mighty swords”</p>
+        <p class="dim">They rolled a <b>2</b>. On a perilous order. That is the number where men do not come home.</p>
+        <p class="dim">Every one of them came home. They came home <b>nineteen coin richer</b>.</p>
+        <p class="dim">The Iron Hand were raiders working toward a coast road that would belong to nobody but them — and they happened to roll maximum openness in that world. Openness turns out to mean that when a column of naked hungover men walks uphill at you at dawn with their swords out, you do not kill them. You laugh. Then you do business. Then you stop sending crews out on the dawn shift, because you cannot stop laughing.</p>
+        <p class="lede">That was <b>disrupt 2 on the coast road, bought with nothing but dignity.</b></p>
       </div>
       <div style="display:flex;flex-direction:column;gap:20px">
-        <p class="quote">“Have one hand go to each neighbour, knock on the front door then pretend to collapse dead, upon being admitted for treatment attempt to steal gold from the market and run back to town, hopefully not dying too much.”</p>
-        <p class="dim">All three doors opened. All three collapses were believed. <b>135 coin</b>, stolen by three people pretending to die, because every neighbour in that particular world rolled maximum openness and generosity was the only exploitable thing in it.</p>
-        <p class="lede">Nobody designed that move. Nobody designed that exploit. It was in the numbers.</p>
+        <p class="quote">“the entire reach is shocked by the advancement in erect quilt technology and the village puts their hands to both having erections and making quilts”</p>
+        <div class="roll num"><span><span class="k">d6 </span><span class="d">6</span></span><span><span class="k">+ receptive </span><span class="d">3</span></span><span><span class="k">− overreach </span><span class="d">1</span></span><span><span class="k">= </span><span class="d">8</span></span><span style="margin-left:auto"><span class="k">needed </span><span class="d">8</span></span></div>
+        <p class="dim">Eight hands of ten. The engine docked a point for overreach, because committing your whole population to one trade is a stretch even when the trade is that one. It landed <b>on the nose</b>: 135 coin, the most profitable act in the reach’s history.</p>
+        <p class="lede">Nobody designed that move. Nobody wrote a rule for quilts. <b>It was in the numbers.</b></p>
       </div>
     </div>
   </section>
@@ -388,7 +412,7 @@ footer .it{font-style:italic}
           <p>They sent every worker they had — eight and a half pairs of hands, the entire labouring population of the Reach — to the gates of the Sundered Charter, to preach a god of community and common interest to a people whose whole theology was a wall.</p>
           <p>It was not a stupid idea. The Charter were open — as open as anyone in that valley, which is to say completely. The pitch was good. The target was correct.</p>
           <p>They rolled a two.</p>
-          <p>Three points of receptiveness, minus one for sending literally everyone, against a threshold of five. Four. One short. The missionaries came home, wet and unconverted, and the Reach had no labour left at all.</p>
+          <p>Three points of receptiveness, minus one for sending literally everyone, against a threshold of eight. Eight exactly. It landed on the nose, and a municipal mandate on quilts became the most profitable thing the reach ever did.</p>
           <p>That was also the day the first brake expired. The Charter, freed and unwatched, began to move for the first time in five days.</p>
           <h3>THE DYING TRAVELLERS</h3>
           <p>The lord's reply to losing everything was to lose it more creatively.</p>
