@@ -6,6 +6,9 @@ An idle RPG inside Claude Code. It runs in real time whether you are there or no
 
 ### 🌐 [https://netmobster.github.io/elsewhere-idle-cc/](https://netmobster.github.io/elsewhere-idle-cc/)
 
+**[📖 The Elsewhere Logs](https://echofiles.substack.com/p/the-elsewhere-logs-day-0-i-built)** — a five-part series on why this exists, what broke
+building it, and the architecture underneath. Start at Day 0.
+
 **[▶ Watch a complete game, scene by scene](https://netmobster.github.io/elsewhere-idle-cc/demo.html)** — eight
 in-world days, the chat and the board side by side. Every line the player typed is
 verbatim; every roll comes from the engine's ledger.
@@ -98,6 +101,9 @@ whole population to one trade is a stretch even when the trade is that one. It l
 
 Nobody designed that move. Nobody wrote a rule for quilts. **It was in the numbers.**
 
+*The full playthrough, the architecture underneath it, and where it breaks:*
+**[Day 4-ish — Ask For Anything](https://echofiles.substack.com/p/the-elsewhere-logs-day-4-ish-ask)**.
+
 ### And then the part you did not see
 
 The Iron Hand advanced **nine of their ten segments while nobody was watching them.**
@@ -187,6 +193,9 @@ The renderer never emits a `true` fact. Ledger rows for neighbours you weren't
 watching are withheld. An unwatched bar shows fog, never a number. If any of that
 leaks, the fog is just a graphic.
 
+*Why fog exists at all, and what else fell out of the same four-word spec:*
+**[Day 1-ish — Four Words Of Spec](https://echofiles.substack.com/p/the-elsewhere-logs-day-1-ish-four)**.
+
 ---
 
 ## And then you find out
@@ -267,6 +276,9 @@ absentee     274    6.2 days
 PASS 6/6
 ```
 
+*The week this harness kept telling me the game was broken and I kept not believing
+it:* **[Day 3-ish — Two Determinism Bugs And Six Wasted Iterations](https://echofiles.substack.com/p/the-elsewhere-logs-day-3-ish-two)**.
+
 **Attention is worth about three and a half times an absentee's score, and more than
 twice their lifespan.** But it does not make you safe: the attentive player still
 loses a neighbour in five worlds out of six. A game the attentive player always won
@@ -303,6 +315,9 @@ What came across:
 
 SEREN is the immersive one — an evening, a campaign, a world you live in.
 Elsewhere is pick up and play. Same engineering honesty, different cadence.
+
+*Why I built a second game instead of playing the first one:*
+**[Day 2-ish — Seren, And What A Good Evening Costs](https://echofiles.substack.com/p/the-elsewhere-logs-day-2-ish-seren)**.
 
 ---
 
