@@ -360,10 +360,20 @@ const seenSet = () => { try { return new Set(JSON.parse(store.get(`elsewhere-see
 const saveSeen = (s) => store.set(`elsewhere-seen-${SID}`, JSON.stringify([...s].slice(-400)));
 const nameOf = (id) => ((P && P.view.fronts.find(f => f.id === id)) || {}).name || id || "";
 const mods = (row) => (row.mods || []).map(([k, v]) => `${v < 0 ? "−" : "+"} ${esc(k)} <span class="n">${Math.abs(v)}</span>`).join("   ");
+// Each kind of roll resolves on its own ladder (engine.py). Printing the wrong one
+// makes a correct outcome look like a lie — a 3 marked "part-landed" beside
+// "(8 lands · 5 partial)" — which is the one thing a ledger cannot afford.
+function ladder(r) {
+  if (r.t === "clock") return `(${esc(r.threshold)} advances)`;
+  if (r.t === "mega") return `(${esc(r.threshold)} lands)`;
+  // The engine records the ladder a roll was judged on, in the row. Read that;
+  // never keep a second copy of the thresholds here.
+  if (r.ladder) return `(${esc(r.ladder.ok)} lands · ${esc(r.ladder.partial)} partial)`;
+  return "";   // an older row with no ladder recorded: show the maths, claim no threshold
+}
 function rollBlock(r) {
   const head = r.t === "mega" ? "2d6" : "d6";
-  const need = r.t === "clock" ? `(${esc(r.threshold)} advances)` : r.t === "mega" ? "(9 lands)" : "(8 lands · 5 partial)";
-  return `${head} <span class="n">${esc(r.roll)}</span>   ${mods(r)}   =  <span class="hit">${esc(r.total)}</span>   ${need}`;
+  return `${head} <span class="n">${esc(r.roll)}</span>   ${mods(r)}   =  <span class="hit">${esc(r.total)}</span>   ${ladder(r)}`;
 }
 function beatHTML(r) {
   if (r.t === "action") {

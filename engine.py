@@ -441,6 +441,7 @@ def resolve_action(s, rng, action, at):
 
     s["ledger"].append({
         "id": eid(s), "at": at.isoformat(), "t": "action", "kind": kind,
+        "ladder": {"ok": 4, "partial": 2},
         "what": action["what"], "target": tgt, "roll": roll, "mods": mods,
         "total": total, "drift": drift, "outcome": outcome,
         "cost": cost, "refund": refund, "gain": gain,
@@ -528,6 +529,7 @@ def resolve_improvised(s, rng, action, at):
 
     s["ledger"].append({
         "id": eid(s), "at": at.isoformat(), "t": "action", "kind": "improvise",
+        "ladder": {"ok": 8, "partial": 5},
         "what": action["what"], "target": tgt, "roll": roll, "mods": mods,
         "total": total, "drift": 0, "outcome": outcome,
         "cost": coin, "refund": 0, "gain": gain,
