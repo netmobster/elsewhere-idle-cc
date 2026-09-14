@@ -219,6 +219,10 @@ def enqueue(sess: dict, spec: dict, replace=False) -> dict:
             "said": spec.get("said", ""),
         }
     else:
+        committed = sum(int(q.get("coin") or q.get("cost") or 0)
+                        for q in s["queue"] if q.get("kind") != "mega")
+        if engine.ACTIONS[kind]["cost"] > s["holding"]["coin"] - committed:
+            return {"error": f"not enough coin for {kind} once queued orders are paid"}
         order = {
             "what": spec.get("what") or engine.ACTIONS[kind]["label"].format(front=f["name"]),
             "kind": kind,
@@ -229,6 +233,15 @@ def enqueue(sess: dict, spec: dict, replace=False) -> dict:
         }
     s["queue"].append(order)
     return {"queued": order["what"], "kind": kind, "target": f["name"]}
+
+
+def cancel(sess: dict, index: int) -> dict:
+    """Withdraw a queued order before it fires. Nothing has been spent yet."""
+    q = sess["state"]["queue"]
+    if not 0 <= index < len(q):
+        return {"error": "no such order"}
+    gone = q.pop(index)
+    return {"cancelled": gone.get("what")}
 
 
 def advance(sess: dict, hours: float) -> dict:
@@ -294,10 +307,21 @@ def freeform(sess: dict, text: str) -> dict:
         except Exception:
             pass
     results = []
-    for order in mapped.get("orders") or []:
-        results.append(enqueue(sess, order))
-    return {"mapped": {k: mapped[k] for k in mapped if k != "_meta"},
-            "meta": mapped.get("_meta"), "results": results}
+    for order in (mapped.get("orders") or [])[:engine.QUEUE_SLOTS]:
+        try:
+            results.append(enqueue(sess, order))
+        except ValueError as exc:
+            results.append({"error": str(exc)})
+    priced = [q for q in sess["state"]["queue"][-len(results):]] if results else []
+    return {
+        "read_as": {"watch": mapped.get("watch"),
+                    "orders": [{k: o.get(k) for k in ("kind", "what", "target", "scale", "aims", "perilous", "beholden")}
+                               for o in (mapped.get("orders") or [])]},
+        "priced": [{k: o.get(k) for k in ("kind", "what", "target", "scale", "coin", "cost", "hands",
+                                          "gain", "grants", "perilous")} for o in priced],
+        "results": results,
+        "via": (mapped.get("_meta") or {}).get("source"),
+    }
 
 
 def score_world(s: dict) -> dict:

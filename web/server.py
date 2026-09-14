@@ -105,22 +105,40 @@ class Handler(SimpleHTTPRequestHandler):
             return self._json(403, {"error": "free play time used — your world is still running",
                                     **game.public(sess)})
         body = self._read()
+        result = None
         if action == "watch":
             game.apply_watch(sess, body.get("target") or body.get("watch") or "")
         elif action == "order":
-            game.enqueue(sess, body, replace=bool(body.get("replace")))
-        elif action == "say":
-            out = game.freeform(sess, body.get("text") or "")
-            if out.get("error"):
+            result = game.enqueue(sess, body, replace=bool(body.get("replace")))
+            if isinstance(result, dict) and result.get("error"):
                 game.save_session(sess)
-                return self._json(400, {**out, **game.public(sess)})
+                return self._json(400, {**result, **game.public(sess)})
+        elif action == "cancel":
+            result = game.cancel(sess, int(body.get("index", -1)))
+        elif action == "say":
+            result = game.freeform(sess, body.get("text") or "")
+            if result.get("error"):
+                game.save_session(sess)
+                return self._json(400, {**result, **game.public(sess)})
         elif action == "advance":
-            hours = float(body.get("hours") or 8)
-            game.advance(sess, hours)
+            result = game.advance(sess, float(body.get("hours") or 8))
         else:
             return self._json(404, {"error": "unknown action"})
         game.save_session(sess)
-        return self._json(200, game.public(sess))
+        # `result` lets the client show its working: how a sentence was read and
+        # priced, and what a skip resolved. Everything in it is already fog-safe or
+        # is the player's own order.
+        return self._json(200, {**game.public(sess), "result": _safe_result(action, result)})
+
+
+def _safe_result(action, result):
+    if not isinstance(result, dict):
+        return None
+    if action == "advance":
+        # new_ledger is raw — it can carry unwatched clock rows. The client gets
+        # the fogged ledger through `view` instead; only the count travels here.
+        return {"ticks": result.get("ticks", 0)}
+    return result
 
 
 def main():

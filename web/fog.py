@@ -103,14 +103,25 @@ def horizon_safe(s):
                 "line": f'Nothing reliable has come back from {r["front"]}.',
             })
         else:
-            days = r.get("days")
+            days, hours = r.get("days"), r.get("hours")
             rows.append({
                 "front": r["front"], "id": r["id"], "rumour": bool(r.get("rumour")),
-                "hours": r.get("hours"), "days": days,
-                "line": (f'{r["front"]} looks about {days} day(s) from finishing.'
-                         if days is not None else f'{r["front"]} is moving.'),
+                "hours": hours, "days": days,
+                "line": _eta_line(r["front"], days, hours, r.get("wants", "")),
             })
     return rows
+
+
+def _eta_line(front, days, hours, wants):
+    if days is None:
+        return f"{front} is moving."
+    if hours is not None and hours < 36:
+        when = f"about {int(round(hours))} hours"
+    else:
+        d = int(round(days))
+        when = "about a day" if d <= 1 else f"about {d} days"
+    tail = f" They want {wants}." if wants else ""
+    return f"{front} is {when} away.{tail}"
 
 
 def world_mode(s):
