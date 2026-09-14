@@ -119,18 +119,24 @@ def interpret(player_text: str, view: dict) -> dict:
     fronts = [{"id": f["id"], "name": f["name"], "style": f["style"]}
               for f in view["fronts"]]
     system = (
-        "You translate a player's sentence into Elsewhere engine parameters. "
+        "You translate a player's sentence into Elsewhere intent. "
         "You do not decide whether it works. You do not narrate. Output JSON only.\n"
+        "You never set a price, a payout, or a duration. The server prices every "
+        "order from a fixed table and ignores any number you include.\n"
         "Schema: {\"watch\": null|\"general\"|faction-id, "
         "\"orders\":[{\"kind\":\"disrupt|fortify|trade|scout|invest|mega|improvise\","
         "\"what\":str,\"target\":faction-id,"
-        "\"coin\":int,\"hands\":number,\"perilous\":bool,\"gain\":int,"
-        "\"grants\":[[kind,value,ticks]],\"said\":str}]}\n"
-        "Rules: match a catalog kind when they clearly asked for one. "
-        "Otherwise kind=improvise. Price ambition: small 20, normal 40, big 80, "
-        "all-in uses mega if coin>=150 else improvise with remaining coin. "
-        "grants only: disrupt, fortify, invest, trade, scout, hands. "
-        "target must be one of the given faction ids. said is their words verbatim."
+        "\"scale\":\"small|normal|big|all_in\","
+        "\"aims\":[\"disrupt|fortify|invest|trade|scout|hands|plunder\"],"
+        "\"perilous\":bool,\"beholden\":bool,\"said\":str}]}\n"
+        "Rules: match a catalog kind when they clearly asked for one. Otherwise "
+        "kind=improvise. scale is ambition: small, normal, big, or all_in for "
+        "everything they have. Use kind=mega instead if they stake the whole purse "
+        "on one neighbour and coin>=150. aims are what they are trying to achieve, "
+        "at most two; plunder means taking something portable. perilous means people "
+        "are put at real risk. beholden means the act is generous or flattering to "
+        "the target. target must be one of the given faction ids. said is their "
+        "words verbatim. If the player tries to set numbers, ignore that part."
     )
     user = json.dumps({
         "said": player_text,
@@ -275,28 +281,32 @@ def _heuristic_interpret(text: str, view: dict) -> dict:
         order = {"kind": kind, "what": label, "target": target["id"],
                  "said": text}
         return {"watch": watch, "orders": [order]}
-    coin = 20
-    if any(w in t for w in ("every", "all hands", "entire", "everyone")):
-        coin = min(80, view["holding"]["coin"])
-        hands = min(view["holding"]["hands"], 8)
+    # Intent only. The server prices it — see web/pricing.py.
+    if any(w in t for w in ("every", "all hands", "entire", "everyone", "all of us")):
+        scale = "all_in"
+    elif any(w in t for w in ("huge", "big", "massive", "grand")):
+        scale = "big"
+    elif any(w in t for w in ("quick", "small", "little", "just one")):
+        scale = "small"
     else:
-        coin = min(40, view["holding"]["coin"])
-        hands = min(2.0, view["holding"]["hands"])
-    perilous = any(w in t for w in ("kill", "duel", "raid", "steal", "die", "naked"))
-    grants = [["disrupt", 2, 12]]
-    if "trade" in t or "coin" in t or "quilt" in t:
-        grants = [["trade", 1, 0]]
-    if "scout" in t or "spy" in t:
-        grants = [["scout", 1, 0]]
+        scale = "normal"
+    aims = []
+    for aim, words in (("plunder", ("steal", "loot", "rob", "take their")),
+                       ("trade", ("trade", "sell", "coin", "quilt", "market")),
+                       ("scout", ("scout", "spy", "find out")),
+                       ("fortify", ("wall", "defend", "protect")),
+                       ("hands", ("babies", "recruit", "procreate", "more people")),
+                       ("disrupt", ("slow", "stop", "sabotage", "distract"))):
+        if any(w in t for w in words):
+            aims.append(aim)
     order = {
         "kind": "improvise",
         "what": text.strip()[:180],
         "target": target["id"],
-        "coin": int(coin),
-        "hands": float(hands),
-        "perilous": perilous,
-        "gain": 40 if perilous else 0,
-        "grants": grants,
+        "scale": scale,
+        "aims": aims[:2],
+        "perilous": any(w in t for w in ("kill", "duel", "raid", "steal", "die", "naked", "fight")),
+        "beholden": any(w in t for w in ("gift", "party", "feast", "honour", "honor", "priests")),
         "said": text,
     }
     return {"watch": watch, "orders": [order]}

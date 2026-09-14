@@ -10,7 +10,7 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 import engine
-from web import ai, fog
+from web import ai, fog, pricing
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
@@ -139,7 +139,10 @@ def enqueue(sess: dict, spec: dict, replace=False) -> dict:
         return {"error": "world already settled"}
     s["watch_until"] = s.get("tick", 0) + engine.WATCH_TICKS
     if replace:
-        s["queue"] = []
+        # Keep a queued mega. Its stake is the whole purse at queue time, so
+        # clearing and rebuilding re-prices it from whatever is left — the bug
+        # fixed in the engine in v1.1.0, reintroduced here.
+        s["queue"] = [q for q in s["queue"] if q.get("kind") == "mega"]
     if len(s["queue"]) >= engine.QUEUE_SLOTS:
         return {"error": "queue full"}
     kind = spec.get("kind") or "disrupt"
@@ -147,17 +150,19 @@ def enqueue(sess: dict, spec: dict, replace=False) -> dict:
         kind = "improvise"
     f = _match_front(s, spec.get("target") or s["watching"])
     if kind == "improvise":
+        # Intent in, price out. coin / hands / gain / grants in the request are
+        # never read — see web/pricing.py for why.
+        committed = sum(int(q.get("coin") or q.get("cost") or 0)
+                        for q in s["queue"] if q.get("kind") != "mega")
+        available = {"coin": max(0, s["holding"]["coin"] - committed),
+                     "hands": s["holding"]["hands"]}
+        priced = pricing.price(spec, available)
         order = {
-            "what": spec.get("what") or spec.get("said") or "an improvised scheme",
-            "kind": "improvise",
+            "what": (spec.get("what") or spec.get("said") or "an improvised scheme")[:240],
             "target": f["id"],
             "clock_at_queue": f["clock"],
-            "coin": int(spec.get("coin") or 40),
-            "hands": float(spec.get("hands") or 2),
-            "perilous": bool(spec.get("perilous")),
-            "gain": int(spec.get("gain") or 0),
-            "grants": [tuple(g) for g in (spec.get("grants") or [["disrupt", 2, 12]])],
-            "said": spec.get("said") or spec.get("what") or "",
+            "said": (spec.get("said") or spec.get("what") or "")[:600],
+            **priced,
         }
     elif kind == "mega":
         order = {
