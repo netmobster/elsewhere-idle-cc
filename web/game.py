@@ -130,10 +130,16 @@ def new_session(seed=None, owner_token: str = "") -> dict:
     view = fog.view(state)
     briefing = ai.narrate(view, None, first=True)
     charge(sess, briefing["meta"])
-    sess["messages"].append({"role": "narrator", "text": briefing["text"],
+    sess["messages"].append({"role": "narrator", "text": briefing["text"], **_stamp(sess["state"]),
                              "meta": briefing["meta"]})
     save_session(sess)
     return sess
+
+
+def _stamp(s: dict) -> dict:
+    """Which day and watch a message belongs to, so old briefings can collapse to a row."""
+    w = fog.world_mode(s)
+    return {"day": s.get("day", 1), "watch": w["watch_name"], "at": s.get("last_tick")}
 
 
 def public(sess: dict) -> dict:
@@ -282,7 +288,7 @@ def _resolve(sess: dict, now, skipped_hours):
         view = fog.view(s)
         briefing = ai.narrate(view, int(skipped_hours) if skipped_hours else None, first=False)
         charge(sess, briefing["meta"])
-        sess["messages"].append({"role": "narrator", "text": briefing["text"],
+        sess["messages"].append({"role": "narrator", "text": briefing["text"], **_stamp(sess["state"]),
                                  "meta": briefing["meta"]})
     return out
 
