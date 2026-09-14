@@ -144,7 +144,7 @@ function render(p){
   document.documentElement.dataset.mode = v.world.mode;
   $('place').textContent = v.holding.name;
   $('sky').textContent = `${v.world.watch_name} · day ${v.day} · seed ${v.seed}`;
-  $('clock').textContent = `${p.minutes_left.toFixed(1)} min left`;
+  $('clock').textContent = p.unlimited ? 'unlimited' : `${p.minutes_left.toFixed(1)} min of play left`;
   $('hold').innerHTML = `
     <div><b>${v.holding.coin}</b><span>coin</span></div>
     <div><b>${v.holding.hands}</b><span>hands</span></div>
@@ -224,6 +224,14 @@ $('say').addEventListener('submit', async e => {
 });
 
 boot().catch(err => { $('err').hidden=false; $('err').textContent = err.message; });
+
+// Heartbeat while visible. Reading the board is playing; a hidden tab is not.
+setInterval(() => {
+  if (document.visibilityState !== 'visible' || !SID) return;
+  fetch(`/api/session/${SID}/ping`, {method: 'POST'}).then(r => r.json()).then(p => {
+    if (p && p.view && typeof render === 'function') render(p);
+  }).catch(() => {});
+}, 45000);
 </script>
 </body>
 </html>

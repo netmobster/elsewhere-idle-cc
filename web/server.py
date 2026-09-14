@@ -66,6 +66,11 @@ class Handler(SimpleHTTPRequestHandler):
                 sess = game.load_session(parts[2])
             except KeyError:
                 return self._json(404, {"error": "no such session"})
+            # Opening the world is what makes time pass: whatever happened while
+            # the player was away resolves now, against the real clock.
+            game.catch_up(sess)
+            game.touch(sess)
+            game.save_session(sess)
             return self._json(200, game.public(sess))
         return SimpleHTTPRequestHandler.do_GET(self)
 
@@ -81,15 +86,23 @@ class Handler(SimpleHTTPRequestHandler):
 
     def _post(self, parts):
         if parts == ["api", "session"]:
-            sess = game.new_session()
+            sess = game.new_session(owner_token=self.headers.get("X-Elsewhere-Owner", ""))
             return self._json(200, game.public(sess))
         if parts[:2] != ["api", "session"] or len(parts) < 4:
             return self._json(404, {"error": "unknown"})
         sid, action = parts[2], parts[3]
         sess = game.load_session(sid)
-        if game.expired(sess) and action != "status":
+        game.catch_up(sess)
+        game.touch(sess)
+        if action == "ping":
+            # Heartbeat from a visible tab, so time spent reading the board counts.
             game.save_session(sess)
-            return self._json(403, {"error": "free window closed",
+            return self._json(200, game.public(sess))
+        if game.expired(sess):
+            # Free play time is spent. The world does not stop — it keeps running
+            # in real time and stays visible. It just stops taking orders.
+            game.save_session(sess)
+            return self._json(403, {"error": "free play time used — your world is still running",
                                     **game.public(sess)})
         body = self._read()
         if action == "watch":

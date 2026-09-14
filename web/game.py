@@ -18,6 +18,11 @@ SESS = HERE / "sessions"
 SESS.mkdir(exist_ok=True)
 
 SESSION_MINUTES = int(os.environ.get("ELSEWHERE_SESSION_MINUTES", "30"))
+# A gap between two requests longer than this is the player being away, not
+# playing, and does not count against their free time. The client pings while
+# the tab is visible, so reading the board counts; closing the laptop does not.
+IDLE_GAP_SECONDS = int(os.environ.get("ELSEWHERE_IDLE_GAP_SECONDS", "90"))
+OWNER_TOKEN = os.environ.get("ELSEWHERE_OWNER_TOKEN", "")
 BUDGET_USD = float(os.environ.get("ELSEWHERE_SESSION_BUDGET_USD", "0.20"))
 MAX_CALLS = {"interpret": 16, "narrate": 14, "chronicle": 1}
 
@@ -43,13 +48,45 @@ def save_session(sess: dict) -> None:
 
 
 def remaining(sess: dict) -> float:
-    start = datetime.fromisoformat(sess["started"])
-    used = (_now() - start).total_seconds()
-    return max(0.0, SESSION_MINUTES * 60 - used)
+    """Free *play* time left, not time since the world was made.
+
+    It used to be wall-clock from creation, which meant every free world died
+    half an hour after it started and no free player could ever come back the
+    next day — the one thing this game is about. The world now persists and runs
+    in real time for as long as it lives; the free tier is thirty minutes of
+    actually playing it, spent across as many visits as you like.
+    """
+    if sess.get("unlimited"):
+        return float("inf")
+    return max(0.0, SESSION_MINUTES * 60 - float(sess.get("play_seconds", 0.0)))
 
 
 def expired(sess: dict) -> bool:
     return remaining(sess) <= 0 and sess["state"].get("status") != "settled"
+
+
+def touch(sess: dict) -> None:
+    """Accrue active play time from the gap since the last request."""
+    now = _now()
+    last = sess.get("last_seen")
+    if last:
+        gap = (now - datetime.fromisoformat(last)).total_seconds()
+        if 0 < gap <= IDLE_GAP_SECONDS:
+            sess["play_seconds"] = float(sess.get("play_seconds", 0.0)) + gap
+    sess["last_seen"] = now.isoformat()
+
+
+def catch_up(sess: dict) -> dict:
+    """Advance the world to the real clock. This is "while you were gone".
+
+    Runs on every load. If the player skipped ahead, last_tick is in the future
+    and the engine returns zero ticks until real time catches up — no rewind,
+    no double counting.
+    """
+    s = sess["state"]
+    if s.get("status") == "settled":
+        return {"ticks": 0}
+    return _resolve(sess, _now(), skipped_hours=None)
 
 
 def spend_ok(sess: dict, layer: str) -> bool:
@@ -72,12 +109,15 @@ def charge(sess: dict, meta: dict) -> None:
     })
 
 
-def new_session(seed=None) -> dict:
+def new_session(seed=None, owner_token: str = "") -> dict:
     state = engine.new_world(seed)
     sid = secrets.token_urlsafe(10)
     sess = {
         "id": sid,
         "started": _now().isoformat(),
+        "last_seen": _now().isoformat(),
+        "play_seconds": 0.0,
+        "unlimited": False,
         "spend_usd": 0.0,
         "calls": {"interpret": 0, "narrate": 0, "chronicle": 0},
         "ai_log": [],
@@ -85,6 +125,8 @@ def new_session(seed=None) -> dict:
         "messages": [],
         "state": state,
     }
+    if OWNER_TOKEN and owner_token and secrets.compare_digest(owner_token, OWNER_TOKEN):
+        sess["unlimited"] = True
     view = fog.view(state)
     briefing = ai.narrate(view, None, first=True)
     charge(sess, briefing["meta"])
@@ -96,10 +138,13 @@ def new_session(seed=None) -> dict:
 
 def public(sess: dict) -> dict:
     left = remaining(sess)
+    unlimited = left == float("inf")
     return {
         "id": sess["id"],
-        "minutes_left": round(left / 60, 2),
-        "seconds_left": int(left),
+        "unlimited": unlimited,
+        "minutes_left": None if unlimited else round(left / 60, 2),
+        "seconds_left": None if unlimited else int(left),
+        "play_minutes": round(float(sess.get("play_seconds", 0.0)) / 60, 1),
         "expired": expired(sess),
         "spend_usd": sess["spend_usd"],
         "budget_usd": BUDGET_USD,
@@ -187,12 +232,22 @@ def enqueue(sess: dict, spec: dict, replace=False) -> dict:
 
 
 def advance(sess: dict, hours: float) -> dict:
+    """The skip button. Moves the world ahead of the real clock."""
     s = sess["state"]
     if s.get("status") == "settled":
         return {"ticks": 0, "settled": True}
-    now = datetime.fromisoformat(s["last_tick"]) + timedelta(hours=hours)
+    hours = max(0.0, min(float(hours), 72.0))
+    base = max(datetime.fromisoformat(s["last_tick"]), _now())
+    return _resolve(sess, base + timedelta(hours=hours), skipped_hours=hours)
+
+
+def _resolve(sess: dict, now, skipped_hours):
+    """Tick the engine to `now`, then narrate or chronicle what happened."""
+    s = sess["state"]
     before = len(s["ledger"])
     out = engine.tick(s, now)
+    if not out.get("ticks"):
+        return out
     out["new_ledger"] = s["ledger"][before:]
     if s.get("status") == "settled":
         score = score_world(s)
@@ -210,9 +265,9 @@ def advance(sess: dict, hours: float) -> dict:
                 "role": "chronicle", "text": ch,
                 "meta": {"source": "budget-cap", "layer": "chronicle", "usd": 0},
             })
-    elif spend_ok(sess, "narrate"):
+    elif spend_ok(sess, "narrate") and not expired(sess):
         view = fog.view(s)
-        briefing = ai.narrate(view, int(hours), first=False)
+        briefing = ai.narrate(view, int(skipped_hours) if skipped_hours else None, first=False)
         charge(sess, briefing["meta"])
         sess["messages"].append({"role": "narrator", "text": briefing["text"],
                                  "meta": briefing["meta"]})
