@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Elsewhere — play in the browser</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Spectral:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+:root{--bg:#0d0c0b;--panel:#171513;--ink:#e9e1d3;--mid:#a9a297;--soft:#6f6a62;--edge:#2a2622;--ember:#ff4d00;--glow:rgba(255,77,0,.42);--caps:Cinzel,serif;--serif:Spectral,Georgia,serif;--mono:"JetBrains Mono",ui-monospace,monospace}
+[data-mode="morning"]{--bg:#1e2226;--panel:#262b30;--ink:#dfe3e6;--ember:#9fb4c4;--glow:rgba(159,180,196,.28)}
+[data-mode="day"]{--bg:#181716;--panel:#211f1d;--ember:#c9b99a}
+[data-mode="sunset"]{--bg:#1a0e07;--panel:#24140a;--ember:#ff8a30;--glow:rgba(255,138,48,.42)}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--serif);font-weight:300;font-size:16px;line-height:1.5;min-height:100%}
+button,textarea,select{font:inherit;color:inherit}
+.label{font-family:var(--caps);font-size:9px;letter-spacing:.38em;color:var(--soft);text-transform:uppercase}
+.hot{color:var(--ember)}
+.num{font-variant-numeric:tabular-nums;font-family:var(--mono);font-size:13px}
+.app{display:grid;grid-template-columns:minmax(280px,1fr) minmax(320px,1.15fr);min-height:100vh}
+@media(max-width:860px){.app{grid-template-columns:1fr}}
+.board,.chat{padding:22px 20px 28px;display:flex;flex-direction:column;gap:16px}
+.board{border-right:1px solid var(--edge);background:var(--panel)}
+.top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+h1{font-family:var(--caps);font-weight:400;font-size:22px;letter-spacing:.08em;margin:0}
+.meta{color:var(--soft);font-size:12px}
+.hold{display:flex;gap:18px;flex-wrap:wrap}
+.hold b{font-family:var(--caps);font-weight:400;color:var(--ember);font-size:20px;display:block}
+.hold span{color:var(--soft);font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+.front{border:1px solid var(--edge);padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.front.on{border-color:var(--ember)}
+.front .nm{font-family:var(--caps);letter-spacing:.06em}
+.front .st{font-size:11px;color:var(--soft);letter-spacing:.16em;text-transform:uppercase}
+.segs{display:flex;gap:3px;height:11px}
+.segs i{flex:1;background:var(--edge);display:block}
+.segs i.on{background:var(--ember);box-shadow:0 0 8px var(--glow)}
+.segs.fog i{background:transparent;border:1px solid var(--edge);animation:fog 3.4s ease-in-out infinite}
+@keyframes fog{0%,100%{opacity:.3}50%{opacity:.8}}
+.q li{display:grid;grid-template-columns:28px 1fr auto;gap:8px;padding:7px 0;border-bottom:1px solid var(--edge);font-size:14px;list-style:none}
+.q{margin:0;padding:0}
+.slot{font-family:var(--caps);color:var(--ember);font-size:11px}
+.ledger{max-height:220px;overflow:auto;display:flex;flex-direction:column;gap:8px;font-size:13px;color:var(--mid)}
+.row .k{font-family:var(--caps);font-size:9px;letter-spacing:.2em;color:var(--ember);margin-right:8px}
+.msgs{flex:1;overflow:auto;display:flex;flex-direction:column;gap:14px;min-height:240px;max-height:52vh}
+.bubble{padding:12px 14px;border:1px solid var(--edge);background:var(--bg)}
+.bubble.player{border-color:var(--ember);align-self:flex-end;max-width:92%}
+.bubble.chronicle{border-color:var(--ember)}
+.who{font-family:var(--caps);font-size:9px;letter-spacing:.28em;color:var(--soft);margin-bottom:6px}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.btn{background:transparent;border:1px solid var(--ember);padding:10px 12px;cursor:pointer;font-family:var(--caps);font-size:10px;letter-spacing:.2em;text-transform:uppercase}
+.btn:hover{background:var(--ember);color:var(--bg)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn.ghost{border-color:var(--edge);color:var(--mid)}
+form.say{display:flex;flex-direction:column;gap:8px}
+textarea{width:100%;min-height:72px;background:var(--bg);border:1px solid var(--edge);padding:10px;resize:vertical}
+.warn{color:var(--ember);font-size:13px}
+.tiny{font-size:11px;color:var(--soft)}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="board">
+    <div class="top">
+      <div>
+        <div class="label hot">The board</div>
+        <h1 id="place">Elsewhere</h1>
+        <div class="meta" id="sky"></div>
+      </div>
+      <div class="meta num" id="clock">—</div>
+    </div>
+    <div class="hold" id="hold"></div>
+    <div id="fronts"></div>
+    <div>
+      <div class="label">Standing orders</div>
+      <ul class="q" id="queue"></ul>
+    </div>
+    <div>
+      <div class="label">Ledger</div>
+      <div class="ledger" id="ledger"></div>
+    </div>
+  </aside>
+  <main class="chat">
+    <div class="top">
+      <div>
+        <div class="label hot">The chat</div>
+        <p class="tiny" id="ai">Python rolls. The model only reads.</p>
+      </div>
+      <div class="tiny num" id="budget"></div>
+    </div>
+    <div class="msgs" id="msgs"></div>
+    <div class="label">Eyes</div>
+    <div class="actions" id="eyes"></div>
+    <div class="label">Priced orders</div>
+    <div class="actions" id="opts"></div>
+    <div class="label">Then skip</div>
+    <div class="actions">
+      <button class="btn" data-h="8">8 hours</button>
+      <button class="btn" data-h="24">1 day</button>
+      <button class="btn ghost" data-h="72">3 days</button>
+    </div>
+    <form class="say" id="say">
+      <label class="label" for="free">Ask for anything</label>
+      <textarea id="free" placeholder="Send the hands pantsless to the Iron Hand. Convert them with quilts. Fake three deaths."></textarea>
+      <button class="btn" type="submit">Queue that</button>
+    </form>
+    <p class="tiny">Catalog buttons skip the interpreter. Freeform spends the cheap interpret model, then the engine still rolls.</p>
+    <p class="warn" id="err" hidden></p>
+  </main>
+</div>
+<script>
+let SID = null;
+const $ = id => document.getElementById(id);
+
+async function api(path, body){
+  const opt = body === undefined ? {} : {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)};
+  const r = await fetch(path, opt);
+  const j = await r.json();
+  if(!r.ok && !j.view){ throw new Error(j.error || r.statusText); }
+  return j;
+}
+
+function segs(front){
+  const n = 10;
+  let html = '';
+  if(front.sight === 'fog'){
+    html = '<div class="segs fog">' + '<i></i>'.repeat(n) + '</div>';
+  } else if(front.sight === 'band'){
+    const lo = front.band?.lo || 0, hi = front.band?.hi || 0;
+    html = '<div class="segs fog">';
+    for(let i=0;i<n;i++) html += `<i class="${i>=lo && i<hi ? 'on':''}"></i>`;
+    html += '</div>';
+  } else {
+    html = '<div class="segs">';
+    for(let i=0;i<n;i++) html += `<i class="${i < (front.clock||0) ? 'on':''}"></i>`;
+    html += '</div>';
+  }
+  return html;
+}
+
+function render(p){
+  const v = p.view;
+  document.documentElement.dataset.mode = v.world.mode;
+  $('place').textContent = v.holding.name;
+  $('sky').textContent = `${v.world.watch_name} · day ${v.day} · seed ${v.seed}`;
+  $('clock').textContent = `${p.minutes_left.toFixed(1)} min left`;
+  $('hold').innerHTML = `
+    <div><b>${v.holding.coin}</b><span>coin</span></div>
+    <div><b>${v.holding.hands}</b><span>hands</span></div>
+    <div><b>${v.queue.length}/5</b><span>queue</span></div>
+    <div><b>${v.watch.mode}</b><span>eyes</span></div>`;
+  $('fronts').innerHTML = v.fronts.map(f => `
+    <div class="front ${f.watched ? 'on':''}">
+      <div class="nm">${f.name}</div>
+      <div class="st">${f.style} · ${f.wants}</div>
+      ${segs(f)}
+      <div class="tiny">${f.label} · agr ${f.aggression} · exp ${f.expansive} · open ${f.openness}</div>
+    </div>`).join('');
+  const slots = [...v.queue, ...Array(Math.max(0,5-v.queue.length)).fill(null)];
+  $('queue').innerHTML = slots.map((q,i) => q
+    ? `<li><span class="slot">${'I II III IV V'.split(' ')[i]}</span><span>${q.what}</span><span class="num">${q.cost}</span></li>`
+    : `<li><span class="slot">${'I II III IV V'.split(' ')[i]}</span><span class="tiny">empty. The world moves anyway.</span><span></span></li>`
+  ).join('');
+  $('ledger').innerHTML = (v.ledger.slice(0,12).map(r => {
+    if(r.t==='action') return `<div class="row"><span class="k">${(r.outcome||'ORDER').toUpperCase()}</span>${r.what} · d6 ${r.roll} = ${r.total}</div>`;
+    if(r.t==='clock') return `<div class="row"><span class="k">CLOCK</span>${r.front} +${r.gained} → ${r.seg}</div>`;
+    if(r.t==='raid') return `<div class="row"><span class="k">RAID</span>${r.front} −${r.taken}</div>`;
+    if(r.t==='interest') return `<div class="row"><span class="k">UNSPENT</span>+${r.gained}</div>`;
+    if(r.t==='mega') return `<div class="row"><span class="k">MEGA</span>${r.outcome} ${r.mutation||''}</div>`;
+    return `<div class="row"><span class="k">${r.t}</span></div>`;
+  }).join('')) || '<div class="tiny">Nothing has happened yet.</div>';
+  $('eyes').innerHTML = `<button class="btn ghost" data-w="general">Hill — all three, roughly</button>` +
+    v.fronts.map(f => `<button class="btn" data-w="${f.id}">${f.name}</button>`).join('');
+  $('opts').innerHTML = v.options.options.map(o =>
+    `<button class="btn" data-k="${o.kind}" ${o.affordable?'':'disabled'}>${o.kind} · ${o.cost}</button>`
+  ).join('');
+  $('ai').textContent = `${p.ai_mode} · interpret ${p.models.interpret} · narrate ${p.models.narrate} · chronicle ${p.models.chronicle}`;
+  $('budget').textContent = `$${p.spend_usd.toFixed(4)} / $${p.budget_usd.toFixed(2)}`;
+  $('msgs').innerHTML = p.messages.map(m =>
+    `<div class="bubble ${m.role}"><div class="who">${m.role}${m.meta?.source ? ' · '+m.meta.source : ''}</div>${escapeHtml(m.text)}</div>`
+  ).join('');
+  $('msgs').scrollTop = $('msgs').scrollHeight;
+  if(v.settled){
+    $('err').hidden = false;
+    $('err').textContent = `World settled. ${v.score?.rank||''} ${v.score?.total||''}. ${v.score?.line||''}`;
+  }
+  if(p.expired){
+    $('err').hidden = false;
+    $('err').textContent = 'The 30-minute window closed. That is the cheap-play test.';
+  }
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+
+async function boot(){
+  const p = await api('/api/session', {});
+  SID = p.id;
+  render(p);
+}
+
+document.querySelector('[data-h="8"]').closest('.actions').addEventListener('click', async e => {
+  const h = e.target.dataset.h; if(!h) return;
+  render(await api(`/api/session/${SID}/advance`, {hours: Number(h)}));
+});
+$('eyes').addEventListener('click', async e => {
+  const w = e.target.dataset.w; if(!w) return;
+  render(await api(`/api/session/${SID}/watch`, {target: w}));
+});
+$('opts').addEventListener('click', async e => {
+  const k = e.target.dataset.k; if(!k) return;
+  const v = (await api(`/api/session/${SID}`)).view;
+  const tgt = v.watch.name ? v.fronts.find(f => f.name===v.watch.name)?.id : v.fronts[0].id;
+  render(await api(`/api/session/${SID}/order`, {kind:k, target: tgt}));
+});
+$('say').addEventListener('submit', async e => {
+  e.preventDefault();
+  const text = $('free').value.trim();
+  if(!text) return;
+  $('free').value = '';
+  render(await api(`/api/session/${SID}/say`, {text}));
+});
+
+boot().catch(err => { $('err').hidden=false; $('err').textContent = err.message; });
+</script>
+</body>
+</html>
