@@ -203,6 +203,16 @@ body.dragging{cursor:col-resize;user-select:none}
 .disp .g{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:7px}
 .pips{display:flex;gap:2px;margin-top:3px} .pips i{width:7px;height:7px;background:var(--edge)} .pips i.on{background:var(--mid)}
 
+.queue{display:flex;flex-direction:column;gap:3px}
+.qrow{display:grid;grid-template-columns:62px 72px minmax(0,1fr) auto;gap:10px;align-items:center;border:1px solid var(--edge);background:var(--bg2);padding:4px 4px 4px 10px;font-size:13px}
+.qrow.next{border-color:rgba(255,77,0,.45)}
+.qrow .t{font-family:var(--mono);font-size:10px;color:var(--soft)} .qrow.next .t{color:var(--ember)}
+.qrow .k{font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--mid);text-transform:uppercase}
+.qrow .w{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--mid)}
+.qrow .x{background:none;border:1px solid transparent;color:var(--soft);font-family:var(--mono);font-size:10px;letter-spacing:.12em;padding:3px 8px}
+.qrow .x:hover{border-color:var(--bad);color:var(--bad2)}
+.fullnote{font-size:12.5px;color:var(--ember);font-style:italic}
+.fullnote button{background:none;border:0;padding:0;color:var(--ink);text-decoration:underline;font:inherit;cursor:pointer}
 .ledger{border:1px solid var(--edge);max-height:260px;overflow-y:auto}
 .lrow{padding:8px 11px;border-top:1px solid var(--edge);cursor:pointer;display:flex;flex-direction:column;gap:5px}
 .lrow:first-child{border-top:0} .lrow:hover{background:#15130f}
@@ -368,6 +378,10 @@ dialog.epi::backdrop{background:rgba(0,0,0,.74);backdrop-filter:blur(3px)}
     <div class="gutter" id="gutter" role="separator" aria-orientation="vertical" aria-label="Resize the columns" tabindex="0" title="Drag to resize · double-click to reset"></div>
     <div class="col" id="colRight">
       <div class="stats" id="stats"></div>
+      <div class="sec" id="queueSec">
+        <div class="sec-h"><span class="lab" id="qTitle">THE QUEUE</span><span class="lab sm">NOTHING IS SPENT UNTIL IT FIRES</span></div>
+        <div class="queue" id="queue"></div>
+      </div>
       <div class="sec">
         <div class="sec-h"><span class="lab">NEIGHBOURS</span><span class="lab sm hot" id="nbCount"></span></div>
         <div class="nb" id="fronts"></div>
@@ -389,6 +403,7 @@ dialog.epi::backdrop{background:rgba(0,0,0,.74);backdrop-filter:blur(3px)}
       <div class="tcol order">
         <div class="olab"><span class="lab sm hot" id="tOrderLab">2 · THE ORDER</span><span class="at" id="tAt">AT <select id="tTarget" aria-label="Which neighbour the order is aimed at"></select><span id="tAtNote"></span></span></div>
         <div class="opts two" id="tOrders"></div>
+        <div class="fullnote" id="tFull" hidden>All five slots are spoken for. <button id="tFullGo">Withdraw one</button> to give a new order &mdash; or leave the queue to run.</div>
         <div class="say"><textarea id="tSay" rows="1" placeholder="Or say it yourself. Throw a feast. Send every worker somewhere they should not go." aria-label="Or say it yourself"></textarea><span class="hint">SAME DECISION · PRICED, ROLLED, LIVED WITH · ENTER TO SEAL</span></div>
       </div>
       <div class="tcol"><span class="lab sm">3 · THEN HOW LONG</span><div class="opts" id="tTime"></div></div>
@@ -560,14 +575,16 @@ function renderSpine() {
   const q = v.queue.map((o, i) => ({o, i, h: hFrom(o.fires)}));
   const inside = q.filter(e => e.h <= WINDOW), beyond = q.filter(e => e.h > WINDOW);
   const laneEnd = [-1, -1];
+  let crowded = 0;
   inside.forEach((e, n) => {
-    const pos = (e.h / WINDOW) * 100; let lane = laneEnd.findIndex(end => pos > end + 1);
-    if (lane < 0) lane = 1;
-    laneEnd[lane] = pos + 17;
+    const pos = (e.h / WINDOW) * 100; const lane = laneEnd.findIndex(end => pos > end + 1);
+    if (lane < 0) { crowded++; out.push(`<span class="sp-tick" style="left:${x(e.h)};top:40px;height:10px;background:var(--ember)" title="${esc(e.o.what)}"></span>`); return; }
+    laneEnd[lane] = pos + 25;
+    const flip = pos > 74;      // near the right edge, hang the label to the left of its mark
     const top = [2, 20][lane], stem = 50 - top - 17;
     const label = e.o.kind === "improvise" ? e.o.what : `${CAT[e.o.kind] ? CAT[e.o.kind][0] : e.o.kind} · ${shortName(nameOf(e.o.target))}`;
-    out.push(`<div class="sp-mine${n === 0 ? " next" : ""}" style="left:${x(e.h)};top:${top}px" title="${esc(e.o.what)}">
-      <span class="t">${esc(hrs(Math.max(0, e.h)))}</span><span class="n">${esc(label)}</span><span class="stem" style="height:${Math.max(6, stem)}px"></span></div>`);
+    out.push(`<div class="sp-mine${n === 0 ? " next" : ""}" style="left:${x(e.h)};top:${top}px;${flip ? "transform:translateX(-100%);text-align:right" : ""}" title="${esc(e.o.what)}">
+      <span class="t">${esc(hrs(Math.max(0, e.h)))}</span><span class="n">${esc(label)}</span><span class="stem" style="height:${Math.max(6, stem)}px;${flip ? "justify-self:end" : ""}"></span></div>`);
   });
   if (beyond.length) out.push(`<div class="sp-mine far" style="right:0;left:auto;top:2px"><span class="t">BEYOND 3 DAYS</span><span class="n">${beyond.length} more order${beyond.length === 1 ? "" : "s"}</span></div>`);
   if (!q.length) out.push(`<div class="sp-mine far" style="left:2%;top:14px;max-width:60%"><span class="t">NOTHING QUEUED</span><span class="n">an empty queue earns nothing while you are gone</span></div>`);
@@ -597,7 +614,7 @@ function renderSpine() {
     }
   });
   $("spine").innerHTML = out.join("");
-  $("spQueue").textContent = `QUEUE ${v.queue.length}/5 · ONE FIRES EVERY 8H`;
+  $("spQueue").textContent = `QUEUE ${v.queue.length}/5 · ONE FIRES EVERY 8H${crowded ? ` · ${crowded} MARKED, NOT LABELLED` : ""}`;
   const warn = silent.length ? `<span class="warn">${esc(silent.map(n => n.toUpperCase()).join(" AND "))} ${silent.length === 1 ? "IS" : "ARE"} NOT ON THIS SPINE. THAT IS THE PROBLEM.</span>` : "";
   $("spLegend").innerHTML = `<span><span style="width:14px;height:2px;background:var(--ember)"></span>ABOVE THE LINE · YOURS</span>
     <span><span style="width:14px;height:2px;background:var(--edge)"></span>BELOW · THEIRS</span>
@@ -632,6 +649,10 @@ function renderBoard() {
     <div class="${full ? "hot" : ""}"><b>${v.queue.length}/5</b><span>${full ? "QUEUE FULL" : "QUEUE"}</span></div>
     <div><b style="font-size:19px;line-height:1.25">${esc(String(h.standing).toUpperCase())}</b><span>STANDING</span></div>`;
   prev = {coin: h.coin, hands: h.hands};
+  $("qTitle").textContent = `THE QUEUE · ${v.queue.length}/5`;
+  $("queue").innerHTML = v.queue.length ? v.queue.map((q, i) => `<div class="qrow${i === 0 ? " next" : ""}"><span class="t">${esc(hrs(Math.max(0, hFrom(q.fires))))}</span><span class="k">${esc(q.kind === "improvise" ? "said" : q.kind)}</span><span class="w" title="${esc(q.what)}">${esc(q.what)}</span>${v.settled || P.expired ? "<span></span>" : `<button class="x" data-cancel="${i}" aria-label="Withdraw this order">WITHDRAW</button>`}</div>`).join("")
+    : `<div class="empty">Empty. An empty queue earns nothing while you are gone.</div>`;
+  $("queue").querySelectorAll("[data-cancel]").forEach(x => x.onclick = () => withdraw(+x.dataset.cancel));
   const fx = v.effects || [];
   $("nbCount").textContent = v.watch.mode === "general" ? "WATCHING FROM THE HILL" : `${v.fronts.filter(f => f.watched).length} OF ${v.fronts.length} WATCHED`;
   $("fronts").innerHTML = v.fronts.map(f => {
@@ -708,8 +729,12 @@ function renderTurn() {
   // 2 · the order
   const full = v.options.slots_left <= 0;
   $("tOrderLab").textContent = full ? "2 · THE ORDER · QUEUE FULL" : `2 · THE ORDER · ${v.holding.coin} TO SPEND`;
+  $("tFull").hidden = !full;
+  $("tSay").disabled = full;
+  $("tSay").placeholder = full ? "The queue is full. Withdraw an order to say something new." : "Or say it yourself. Throw a feast. Send every worker somewhere they should not go.";
+  $("tFullGo").onclick = () => { $("queueSec").scrollIntoView({behavior: "smooth", block: "start"}); $("queue").querySelector(".x")?.focus(); };
   const opts = ["disrupt", "scout", "trade", "fortify", "invest", "mega"].map(k => v.options.options.find(o => o.kind === k)).filter(Boolean);
-  $("tOrders").innerHTML = opts.map(o => `<button class="opt${o.kind === "mega" ? " mega" : ""}${pick.order === o.kind ? " on" : ""}" data-order="${o.kind}" ${!o.affordable || full ? "disabled" : ""} title="${!o.affordable ? "You cannot afford this." : full ? "The queue is full." : ""}">
+  $("tOrders").innerHTML = opts.map(o => `<button class="opt${o.kind === "mega" ? " mega" : ""}${pick.order === o.kind ? " on" : ""}" data-order="${o.kind}" ${!o.affordable || full ? "disabled" : ""} title="${!o.affordable ? "You cannot afford this." : full ? "The queue is full — withdraw an order first." : ""}">
     <span class="l">${CAT[o.kind][0]}</span><span class="r">${o.kind === "mega" ? `ALL ${esc(o.cost)} · ${CAT.mega[1]}` : `${esc(o.cost)} · ${CAT[o.kind][1]}`}</span></button>`).join("")
     || `<span class="note">Nothing affordable. Say something instead — a broke holding can still send people.</span>`;
   $("tOrders").querySelectorAll("[data-order]").forEach(b => b.onclick = () => { pick.order = pick.order === b.dataset.order ? null : b.dataset.order; if (pick.order) $("tSay").value = ""; renderTurn(); });
@@ -752,6 +777,13 @@ function pricedHTML(result) {
   }).join("");
 }
 
+async function withdraw(index) {
+  if (busy) return;
+  busy = true;
+  try { render(await api(`/api/session/${SID}/cancel`, {index})); toast("Order withdrawn. Nothing was spent."); }
+  catch (e) { if (e.data && e.data.view) render(e.data); toast(e.message); }
+  finally { busy = false; }
+}
 async function seal() {
   if (busy || !P || P.view.settled || P.expired) return;
   const v = P.view, text = $("tSay").value.trim();
