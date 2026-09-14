@@ -23,6 +23,30 @@ def _posted(s):
     return s["tick"] <= s.get("watch_until", 0)
 
 
+def memory(s, f):
+    """What you last KNEW about a front, and how long ago.
+
+    Built only from clock rows logged while you had eyes on it — rows the player
+    was already shown. It is stale knowledge, labelled as stale, and it can never
+    carry the current true clock of a front you are not watching, because it only
+    ever reads rows from ticks when you were.
+    """
+    last = None
+    for e in s.get("ledger", []):
+        if e.get("t") == "clock" and e.get("front") == f["id"] and e.get("watched"):
+            last = e
+    now = datetime.fromisoformat(s["last_tick"])
+    since = datetime.fromisoformat(last["at"]) if last else datetime.fromisoformat(s["created"])
+    dark_hours = max(0.0, (now - since).total_seconds() / 3600)
+    return {
+        "last_eyes_at": last["at"] if last else None,
+        "last_eyes_seg": last.get("seg") if last else None,
+        "never_watched": last is None,
+        "dark_hours": round(dark_hours, 1),
+        "dark_days": round(dark_hours / 24, 1),
+    }
+
+
 def fog_front(s, f):
     posted = _posted(s)
     general = posted and s.get("watch_mode") == "general"
@@ -39,6 +63,7 @@ def fog_front(s, f):
         "done": f["done"] if s.get("status") == "settled" else False,
         "watched": seen,
         "sight": "exact" if seen else ("band" if general else "fog"),
+        "memory": memory(s, f),
     }
     if s.get("status") == "settled":
         out["clock"] = f["clock"]
