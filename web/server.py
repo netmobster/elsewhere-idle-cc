@@ -10,6 +10,7 @@ Without AWS credentials the same loop runs on local templates.
 from __future__ import annotations
 
 import json
+import os
 import sys
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
@@ -19,11 +20,12 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from web import game
+from web import game, gate
 
 HERE = Path(__file__).resolve().parent
 STATIC = HERE / "static"
-HOST, PORT = "127.0.0.1", 8765
+HOST = os.environ.get("ELSEWHERE_HOST", "127.0.0.1")
+PORT = int(os.environ.get("ELSEWHERE_PORT", "8765"))
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -48,8 +50,30 @@ class Handler(SimpleHTTPRequestHandler):
             return {}
         return json.loads(self.rfile.read(n).decode("utf-8") or "{}")
 
+    def _gated(self, parsed):
+        """Locked, and this request hasn't shown the word. Everything but the door itself."""
+        if not gate.enabled() or gate.cookie_ok(self.headers.get("Cookie", "")):
+            return False
+        return parsed.path not in ("/gate", "/api/gate", "/favicon.svg")
+
+    def _door(self):
+        body = gate.PAGE.encode("utf-8")
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
     def do_GET(self):
         parsed = urlparse(self.path)
+        if self._gated(parsed):
+            # A page gets the door; an API call gets a 401 the client can act on.
+            if parsed.path.startswith("/api/"):
+                return self._json(401, {"error": "locked"})
+            return self._door()
+        if parsed.path == "/gate":
+            return self._door()
         if parsed.path in ("/", "/play", "/play.html"):
             self.path = "/play.html"
             return SimpleHTTPRequestHandler.do_GET(self)
@@ -76,6 +100,23 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_POST(self):
         parsed = urlparse(self.path)
+        if parsed.path == "/api/gate":
+            try:
+                given = (self._read() or {}).get("password", "")
+            except Exception:
+                given = ""
+            if not gate.enabled() or gate.check(given):
+                body = b'{"ok":true}'
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header(*gate.set_cookie_header())
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+                return
+            return self._json(401, {"error": "no"})
+        if self._gated(parsed):
+            return self._json(401, {"error": "locked"})
         parts = parsed.path.strip("/").split("/")
         try:
             return self._post(parts)
@@ -146,6 +187,7 @@ def main():
     print(f"Elsewhere web prototype  http://{HOST}:{PORT}/")
     print(f"AI: {'Bedrock' if game.ai.bedrock_ready() else 'local fallback (no AWS creds)'}")
     print(f"{game.SESSION_MINUTES} minute sessions · ${game.BUDGET_USD:.2f} cap")
+    print("Gate: password required" if gate.enabled() else "Gate: open (set ELSEWHERE_PASSWORD to lock it)")
     httpd.serve_forever()
 
 
