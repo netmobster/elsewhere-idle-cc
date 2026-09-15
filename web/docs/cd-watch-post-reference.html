@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dray's Gate — Elsewhere</title>
+<meta name="theme-color" content="#0d0c0b">
+<!--
+  ELSEWHERE — the board, "Watch Post" layout. Static reference implementation.
+  Tokens are the game's own, from render.py: ember #ff4d00 on #0d0c0b, Cinzel
+  display / Spectral body / IBM Plex Mono data, outcome ramp ok #8fa86b,
+  partial #c9973f, null #7d7a73, bad #a33a22.
+
+  FOUR RULES THIS LAYOUT ENFORCES
+  1. WHAT IS COMING is the loudest object on the page. Nothing competes with it.
+  2. The turn is a MOMENT YOU SEAL, not a standing panel. After sealing, the
+     whole turn block goes away until the next watch.
+  3. WHAT CHANGED while you were gone gets its own object, above the prose.
+  4. The briefing keeps the current entry; older ones collapse to one-line rows.
+
+  THE SPINE replaces the standing-orders list. Above the line is yours, with
+  real countdowns. Below the line is theirs. A hatched SMEAR is a thing you
+  cannot time — a front with no eyes on it gets a smear, never a bar, and never
+  a number. A front that is fully silent is not on the spine at all, and the
+  legend says so in ember, because that absence is the threat.
+
+  FOG GRAMMAR. The three neighbour treatments encode HOW YOU CAME TO KNOW, never
+  whether the fact is true:
+    eyes on  — crisp ten-segment bar, ember, a real number
+    rumour   — hatched bar that breathes, a hedge instead of a number
+    silence  — no bar at all, a rule reading NO WORD IN 7 DAYS
+  Never render a "loading skeleton" for fog. Absence must look deliberate.
+
+  THE ORDER COLUMN owns the freeform box. The three priced options and the text
+  field are one enclosure, bracketed by ember rails, because they are two ways
+  of answering the same question. Do not move the field out to the page bottom.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Spectral:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#0d0c0b; --panel:#171513; --ink:#e9e1d3; --mid:#a9a297; --soft:#6f6a62;
+  --edge:#2a2622; --ember:#ff4d00; --ember2:#ff6a1a;
+  --ok:#8fa86b; --partial:#c9973f; --null:#7d7a73; --bad:#a33a22;
+}
+*{box-sizing:border-box}
+*{scrollbar-width:thin;scrollbar-color:#3a3835 transparent}
+*::-webkit-scrollbar{width:8px;height:8px}
+*::-webkit-scrollbar-track{background:transparent}
+*::-webkit-scrollbar-thumb{background:#3a3835;border-radius:99px;border:2px solid transparent;background-clip:content-box}
+*::-webkit-scrollbar-thumb:hover{background:var(--ember)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Spectral,Georgia,serif;-webkit-font-smoothing:antialiased}
+a{color:var(--ember);text-decoration:none}
+a:hover{color:var(--ember2)}
+:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
+.page{display:flex;flex-direction:column;align-items:center;padding:20px}
+.screenwrap{width:100%;display:flex;justify-content:center}
+@keyframes squint{0%,100%{opacity:.5;transform:translateX(0)}50%{opacity:.78;transform:translateX(1px)}}
+@keyframes emberpulse{0%,100%{opacity:.55}50%{opacity:1}}
+@keyframes sweep{to{transform:rotate(360deg)}}
+@media (max-width:1100px){
+  /* the spine is the one thing that cannot compress: let it scroll rather than lie */
+  .page{padding:0}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="screenwrap">
+    <div style="width:100%; max-width:1520px; background:#0d0c0b; border:1px solid #2a2622; display:flex; flex-direction:column; font-size:14px;">
+      <div style="display:flex; align-items:center; gap:20px; padding:12px 22px; border-bottom:1px solid #2a2622; background:#12100e;">
+        <span style="display:flex; align-items:center; gap:10px;"><svg width="26" height="26" viewBox="0 0 64 64" style="flex:none; display:block;"><g transform="rotate(-90 32 32)"><circle cx="32" cy="32" r="26" fill="none" stroke="#2a2622" stroke-width="5" stroke-dasharray="13.6 2.6"></circle><circle cx="32" cy="32" r="26" fill="none" stroke="#ff4d00" stroke-width="5" stroke-dasharray="98 66"></circle></g><circle cx="32" cy="32" r="15" fill="#e9e1d3"></circle><circle cx="40" cy="26" r="15" fill="#12100e"></circle></svg><span style="display:flex; flex-direction:column;"><span style="font-family:Cinzel,serif; font-weight:600; font-size:13px; letter-spacing:.22em;">ELSEWHERE</span><span style="font-family:Cinzel,serif; font-size:8px; letter-spacing:.34em; color:#ff4d00;">IDLE WORLD</span></span></span>
+        <span style="width:1px; height:22px; background:#2a2622;"></span>
+        <span style="font-family:Cinzel,serif; font-size:15px; letter-spacing:.08em;">DRAY'S GATE</span>
+        <span style="font-style:italic; font-size:13px; color:#6f6a62;">day 1 · the dusk watch · 19:49</span>
+        <span style="margin-left:auto; display:flex; gap:14px; align-items:center; font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.14em; color:#6f6a62;"><span>SEED 841536420</span><span style="border:1px solid #2a2622; padding:3px 9px;">NEW WORLD</span></span>
+      </div>
+
+      <!-- HORIZON -->
+      <div style="padding:26px 22px 20px; border-bottom:1px solid #2a2622; background:radial-gradient(ellipse at 88% 130%, rgba(255,77,0,.14), transparent 62%), #0d0c0b; display:flex; align-items:flex-start; gap:28px;">
+        <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:10px;">
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.32em; color:#ff4d00;">WHAT IS COMING</span>
+          <div style="font-family:Cinzel,serif; font-size:38px; line-height:1.12; text-wrap:balance; max-width:30ch;">Nothing reliable has come back from <span style="color:#ff4d00;">The Broken Choir</span>.</div>
+          <div style="font-style:italic; font-size:15px; color:#a9a297; max-width:58ch;">Seven days of silence from a faction of builders. Unknown is not zero.</div>
+        </div>
+        <div style="flex:none; width:172px; display:flex; flex-direction:column; align-items:center; gap:6px;">
+          <svg width="158" height="158" viewBox="0 0 120 120" style="display:block;">
+            <circle cx="60" cy="60" r="54" fill="none" stroke="#2a2622" stroke-width="1"></circle>
+            <circle cx="60" cy="60" r="46" fill="none" stroke="#171513" stroke-width="10"></circle>
+            <circle cx="60" cy="60" r="46" fill="none" stroke="#ff4d00" stroke-width="10" stroke-dasharray="289" stroke-dashoffset="86" transform="rotate(-90 60 60)" style="animation:emberpulse 4s ease-in-out infinite;"></circle>
+            <g style="animation:sweep 60s linear infinite; transform-origin:60px 60px;"><line x1="60" y1="60" x2="60" y2="18" stroke="#6f6a62" stroke-width="1"></line></g>
+            <text x="60" y="58" text-anchor="middle" font-family="Cinzel" font-size="21" fill="#e9e1d3">7h 13m</text>
+            <text x="60" y="74" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" letter-spacing="2.6" fill="#6f6a62">NEXT TICK</text>
+            <text x="60" y="89" text-anchor="middle" font-family="Spectral" font-style="italic" font-size="8" fill="#6f6a62">here or not</text>
+          </svg>
+        </div>
+      </div>
+
+      <!-- THE SPINE: orders above, their work below. Replaces the standing-orders list. -->
+      <div style="padding:22px 22px 16px; border-bottom:1px solid #2a2622; display:flex; flex-direction:column; gap:14px;">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; gap:14px; flex-wrap:wrap;">
+          <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.3em; color:#6f6a62;">THE NEXT THREE DAYS, AS FAR AS YOU KNOW IT</span>
+          <span style="display:flex; gap:16px; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:.14em; color:#4a463f;"><span>QUEUE 5/5 · ONE FIRES EVERY 8H</span><span>TIME RUNS LEFT TO RIGHT</span></span>
+        </div>
+        <div style="position:relative; height:152px;">
+          <div style="position:absolute; left:0; right:0; top:74px; height:2px; background:linear-gradient(90deg, #ff4d00 0 3.5%, #2a2622 3.5%);"></div>
+          <div style="position:absolute; left:0; top:48px; display:flex; flex-direction:column; align-items:flex-start; gap:4px;"><span style="width:2px; height:26px; background:#ff4d00;"></span><span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:.18em; color:#ff4d00;">NOW · 19:49</span></div>
+          <!-- above: your orders -->
+          <div style="position:absolute; left:14%; top:8px; display:flex; flex-direction:column; gap:4px; align-items:flex-start;">
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:.16em; color:#ff4d00;">7h 13m</span>
+            <span style="font-size:15px; color:#e9e1d3; font-weight:600;">Fortify the reach</span>
+            <span style="width:1px; height:26px; background:#ff4d00; margin-left:1px;"></span>
+          </div>
+          <div style="position:absolute; left:34%; top:22px; display:flex; flex-direction:column; gap:4px; align-items:flex-start;">
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:.16em; color:#6f6a62;">15h</span>
+            <span style="font-size:14px; color:#a9a297;">Trade · Iron Watch</span>
+            <span style="width:1px; height:18px; background:#2a2622; margin-left:1px;"></span>
+          </div>
+          <div style="position:absolute; left:56%; top:22px; display:flex; flex-direction:column; gap:4px; align-items:flex-start;">
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:.16em; color:#6f6a62;">23h</span>
+            <span style="font-size:14px; color:#a9a297;">Trade · the Choir</span>
+            <span style="width:1px; height:18px; background:#2a2622; margin-left:1px;"></span>
+          </div>
+          <div style="position:absolute; left:74%; top:30px; display:flex; flex-direction:column; gap:4px; align-items:flex-start;">
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:.16em; color:#4a463f;">31h · 39h</span>
+            <span style="font-size:13px; color:#6f6a62; font-style:italic;">two more trades</span>
+            <span style="width:1px; height:12px; background:#1f1c19; margin-left:1px;"></span>
+          </div>
+          <!-- below: their work -->
+          <div style="position:absolute; left:26%; top:82px; display:flex; flex-direction:column; gap:3px;">
+            <span style="width:1px; height:14px; background:rgba(255,77,0,.6); margin-left:1px;"></span>
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:.14em; color:#ff4d00;">IRON WATCH · SEGMENT 1</span>
+            <span style="font-style:italic; font-size:13px; color:#a9a297;">on your count, not theirs</span>
+          </div>
+          <div style="position:absolute; left:42%; right:20%; top:120px; height:22px; background:repeating-linear-gradient(45deg, #2a2622 0 3px, transparent 3px 7px); border:1px dashed #2a2622; display:flex; align-items:center; padding:0 10px; animation:squint 7s ease-in-out infinite;">
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:.14em; color:#6f6a62;">THE CHOIR FINISHES SOMEWHERE IN HERE · OR ALREADY DID</span>
+          </div>
+          <div style="position:absolute; right:0; top:82px; display:flex; flex-direction:column; gap:3px; align-items:flex-end;"><span style="width:1px; height:14px; background:#2a2622;"></span><span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:.14em; color:#4a463f;">+3 DAYS</span></div>
+        </div>
+        <div style="display:flex; gap:22px; flex-wrap:wrap; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:.14em; color:#6f6a62; border-top:1px solid #2a2622; padding-top:11px;">
+          <span style="display:flex; align-items:center; gap:7px;"><span style="width:14px; height:2px; background:#ff4d00;"></span>ABOVE THE LINE · YOURS</span>
+          <span style="display:flex; align-items:center; gap:7px;"><span style="width:14px; height:2px; background:#2a2622;"></span>BELOW · THEIRS</span>
+          <span style="display:flex; align-items:center; gap:7px;"><span style="width:14px; height:8px; background:repeating-linear-gradient(45deg,#2a2622 0 3px,transparent 3px 7px);"></span>A SMEAR IS A THING YOU CANNOT TIME</span>
+          <span style="margin-left:auto; color:#a33a22;">THE SUNDERED CHARTER IS NOT ON THIS SPINE. THAT IS THE PROBLEM.</span>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);">
+        <div style="border-right:1px solid #2a2622; display:flex; flex-direction:column;">
+          <div style="padding:18px 22px; border-bottom:1px solid #2a2622; display:flex; flex-direction:column; gap:12px;">
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.3em; color:#6f6a62;">WHAT CHANGED WHILE YOU WERE GONE</span>
+            <div style="background:#171513; border:1px solid #2a2622; border-left:3px solid #6f6a62; padding:10px 13px; display:flex; gap:12px; align-items:baseline;"><span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:.18em; color:#7d7a73; flex:none; width:64px;">NOTHING</span><span style="font-size:14px; color:#a9a297; font-style:italic;">Nothing new since you last looked. The engine has not rolled yet.</span></div>
+          </div>
+          <div style="padding:20px 22px; display:flex; flex-direction:column; gap:12px; flex:1;">
+            <div style="display:flex; align-items:baseline; justify-content:space-between; gap:12px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.3em; color:#ff4d00;">THE BRIEFING</span><span style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.14em; color:#6f6a62;">DAY 1 · DUSK</span></div>
+            <div style="font-size:17px; line-height:1.62; color:#e9e1d3; max-width:62ch; font-weight:300; text-wrap:pretty;">You hold Dray's Gate. Two hundred coin, four pairs of hands, and one lookout. Three neighbours are already working. <span style="color:#ff4d00;">The Broken Choir</span> stands at 0/10. The Iron Watch is dark — unknown, not zero. The Sundered Charter is dark — unknown, not zero.</div>
+            <div style="font-size:15px; line-height:1.6; color:#a9a297; font-style:italic; max-width:62ch;">The engine already rolled. This is only the reading.</div>
+            <div style="margin-top:auto; display:flex; flex-direction:column; gap:1px; background:#2a2622;">
+              <div style="background:#0d0c0b; padding:9px 12px; display:flex; gap:12px; align-items:baseline; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#6f6a62; letter-spacing:.1em;"><span style="color:#2a2622;">▸</span><span>DAY 1 · THE MORNING</span><span style="margin-left:auto; font-style:italic; font-family:Spectral,serif; letter-spacing:0;">you were handed the keys</span></div>
+            </div>
+            <div style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:.22em; color:#4a463f;">↑ EARLIER BRIEFINGS · COLLAPSED</div>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column;">
+          <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:#2a2622; border-bottom:1px solid #2a2622;">
+            <div style="background:#171513; padding:12px 14px; display:flex; flex-direction:column; gap:3px;"><b style="font-family:Cinzel,serif; font-weight:400; font-size:24px; line-height:1;">200</b><span style="font-family:Cinzel,serif; font-size:8px; letter-spacing:.26em; color:#6f6a62;">COIN</span></div>
+            <div style="background:#171513; padding:12px 14px; display:flex; flex-direction:column; gap:3px;"><b style="font-family:Cinzel,serif; font-weight:400; font-size:24px; line-height:1;">4</b><span style="font-family:Cinzel,serif; font-size:8px; letter-spacing:.26em; color:#6f6a62;">HANDS</span></div>
+            <div style="background:#171513; padding:12px 14px; display:flex; flex-direction:column; gap:3px;"><b style="font-family:Cinzel,serif; font-weight:400; font-size:24px; line-height:1; color:#ff4d00;">5/5</b><span style="font-family:Cinzel,serif; font-size:8px; letter-spacing:.26em; color:#ff4d00;">QUEUE FULL</span></div>
+            <div style="background:#171513; padding:12px 14px; display:flex; flex-direction:column; gap:3px;"><b style="font-family:Cinzel,serif; font-weight:400; font-size:19px; line-height:1.25;">INTACT</b><span style="font-family:Cinzel,serif; font-size:8px; letter-spacing:.26em; color:#6f6a62;">STANDING</span></div>
+          </div>
+          <div style="padding:16px 18px; display:flex; flex-direction:column; gap:10px; flex:1;">
+            <div style="display:flex; justify-content:space-between; align-items:baseline;"><span style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.3em; color:#6f6a62;">NEIGHBOURS</span><span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:.18em; color:#ff4d00;">1 OF 3 WATCHED</span></div>
+            <div style="border:1px solid rgba(255,77,0,.45); background:linear-gradient(180deg, rgba(255,77,0,.05), transparent); padding:11px 13px; display:flex; flex-direction:column; gap:8px;">
+              <div style="display:flex; justify-content:space-between; align-items:baseline; gap:10px;"><span style="display:flex; align-items:baseline; gap:8px;"><span style="font-family:Cinzel,serif; font-size:13px; letter-spacing:.1em;">THE IRON WATCH</span><span style="font-style:italic; font-size:12px; color:#6f6a62;">merchants</span></span><span style="font-family:Cinzel,serif; font-size:14px; color:#ff4d00; font-variant-numeric:tabular-nums;">0/10</span></div>
+              <div style="display:flex; gap:2px; height:10px;"><span style="flex:1; background:#2a2622; box-shadow:inset 0 0 0 1px rgba(255,77,0,.25);"></span><span style="flex:1; background:#2a2622; box-shadow:inset 0 0 0 1px rgba(255,77,0,.25);"></span><span style="flex:1; background:#2a2622; box-shadow:inset 0 0 0 1px rgba(255,77,0,.25);"></span><span style="flex:1; background:#2a2622; box-shadow:inset 0 0 0 1px rgba(255,77,0,.25);"></span><span style="flex:1; background:#2a2622; box-shadow:inset 0 0 0 1px rgba(255,77,0,.25);"></span><span style="flex:1; background:#2a2622; box-shadow:inset 0 0 0 1px rgba(255,77,0,.25);"></span><span style="flex:1; background:#2a2622; box-shadow:inset 0 0 0 1px rgba(255,77,0,.25);"></span><span style="flex:1; background:#2a2622; box-shadow:inset 0 0 0 1px rgba(255,77,0,.25);"></span><span style="flex:1; background:#2a2622; box-shadow:inset 0 0 0 1px rgba(255,77,0,.25);"></span><span style="flex:1; background:#2a2622; box-shadow:inset 0 0 0 1px rgba(255,77,0,.25);"></span></div>
+              <div style="display:flex; justify-content:space-between; align-items:baseline; gap:10px;"><span style="font-style:italic; font-size:13px; color:#e9e1d3;">buying up salvage rights along the coast</span><span style="font-family:Cinzel,serif; font-size:8px; letter-spacing:.2em; color:#ff4d00; border:1px solid rgba(255,77,0,.45); padding:2px 7px; flex:none;">EYES ON</span></div>
+            </div>
+            <div style="border:1px solid #2a2622; background:#12100e; padding:11px 13px; display:flex; flex-direction:column; gap:8px;">
+              <div style="display:flex; justify-content:space-between; align-items:baseline; gap:10px;"><span style="display:flex; align-items:baseline; gap:8px;"><span style="font-family:Cinzel,serif; font-size:13px; letter-spacing:.1em; color:#a9a297;">THE BROKEN CHOIR</span><span style="font-style:italic; font-size:12px; color:#6f6a62;">builders</span></span><span style="font-family:Cinzel,serif; font-size:14px; color:#6f6a62;">~ somewhere</span></div>
+              <div style="height:10px; background:repeating-linear-gradient(45deg, #2a2622 0 3px, transparent 3px 7px); border:1px solid #2a2622; animation:squint 5s ease-in-out infinite;"></div>
+              <div style="display:flex; justify-content:space-between; align-items:baseline; gap:10px;"><span style="font-style:italic; font-size:13px; color:#a9a297;">quarrying above the treeline</span><span style="font-family:Cinzel,serif; font-size:8px; letter-spacing:.2em; color:#6f6a62; border:1px dashed #2a2622; padding:2px 7px; flex:none;">RUMOUR ONLY</span></div>
+            </div>
+            <div style="border:1px solid #1a1816; background:#0f0e0c; padding:11px 13px; display:flex; flex-direction:column; gap:8px;">
+              <div style="display:flex; justify-content:space-between; align-items:baseline; gap:10px;"><span style="display:flex; align-items:baseline; gap:8px;"><span style="font-family:Cinzel,serif; font-size:13px; letter-spacing:.1em; color:#6f6a62;">THE SUNDERED CHARTER</span><span style="font-style:italic; font-size:12px; color:#4a463f;">raiders</span></span><span style="font-family:Cinzel,serif; font-size:14px; color:#4a463f;">—</span></div>
+              <div style="height:10px; display:flex; align-items:center;"><span style="flex:1; height:1px; background:#1a1816;"></span><span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:.24em; color:#4a463f; padding:0 10px;">NO WORD IN 7 DAYS</span><span style="flex:1; height:1px; background:#1a1816;"></span></div>
+              <div style="font-style:italic; font-size:13px; color:#6f6a62;">burning waystations, one a week — <span style="color:#4a463f;">as of last week</span></div>
+            </div>
+            <div style="margin-top:auto; padding-top:10px; border-top:1px solid #2a2622; display:flex; justify-content:space-between; align-items:baseline; gap:10px;"><span style="font-family:'IBM Plex Mono',monospace; font-size:10px; letter-spacing:.3em; color:#6f6a62;">THE LEDGER</span><span style="font-style:italic; font-size:13px; color:#4a463f;">empty. the cleanest it will ever look.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="border-top:2px solid #ff4d00; background:linear-gradient(180deg, rgba(255,77,0,.07), #12100e); padding:18px 22px 20px; display:flex; flex-direction:column; gap:14px;">
+        <div style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap;"><span style="font-family:Cinzel,serif; font-size:17px; letter-spacing:.14em; color:#ff4d00;">TAKE THE TURN</span><span style="font-style:italic; font-size:14px; color:#a9a297;">Three decisions, then it seals and the controls go away until the next watch.</span></div>
+        <div style="display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1px; background:#2a2622; border:1px solid #2a2622; align-items:stretch;">
+          <div style="background:#0d0c0b; padding:13px 15px; display:flex; flex-direction:column; gap:9px;">
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:.24em; color:#6f6a62;">1 · WHERE THE EYES GO</span>
+            <div style="display:flex; flex-direction:column; gap:5px;">
+              <span style="border:1px solid #ff4d00; background:rgba(255,77,0,.1); padding:7px 10px; font-size:13px; display:flex; justify-content:space-between; gap:8px;">The Iron Watch <span style="color:#ff4d00; font-family:'IBM Plex Mono',monospace; font-size:10px;">HELD</span></span>
+              <span style="border:1px solid #2a2622; padding:7px 10px; font-size:13px; color:#a9a297;">The Broken Choir <span style="color:#6f6a62; font-style:italic; font-size:12px;">7 days dark</span></span>
+              <span style="border:1px solid #2a2622; padding:7px 10px; font-size:13px; color:#a9a297;">From the hill <span style="color:#6f6a62; font-style:italic; font-size:12px;">a rough read on all three</span></span>
+            </div>
+          </div>
+          <!-- The order column OWNS the freeform box. The three priced options are the
+               shape of what this world takes seriously; the field is you aiming a
+               sentence at the same question. Ember rails bracket the whole column. -->
+          <div style="background:linear-gradient(180deg, rgba(255,77,0,.05), transparent 60%), #0d0c0b; padding:13px 15px 15px; display:flex; flex-direction:column; gap:9px; box-shadow:inset 2px 0 0 #ff4d00, inset -2px 0 0 #ff4d00;">
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:.24em; color:#ff4d00;">2 · THE ORDER · 200 TO SPEND</span>
+            <div style="display:flex; flex-direction:column; gap:5px;">
+              <span style="border:1px solid #2a2622; padding:7px 10px; font-size:13px; display:flex; justify-content:space-between; gap:8px;">Disrupt <span style="color:#6f6a62;">60 · slow their clock</span></span>
+              <span style="border:1px solid #2a2622; padding:7px 10px; font-size:13px; display:flex; justify-content:space-between; gap:8px;">Scout <span style="color:#6f6a62;">30 · a real number</span></span>
+              <span style="border:1px solid rgba(163,58,34,.6); background:rgba(163,58,34,.1); padding:7px 10px; font-size:13px; display:flex; justify-content:space-between; gap:8px;">Mega <span style="color:#a33a22;">ALL 200 · one throw</span></span>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px; padding-top:3px;">
+              <span style="flex:1; height:1px; background:#2a2622;"></span>
+              <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:.24em; color:#ff4d00;">OR SAY IT YOURSELF</span>
+              <span style="flex:1; height:1px; background:#2a2622;"></span>
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column; gap:7px;">
+              <div style="flex:1; min-height:78px; border:1px solid #ff4d00; background:rgba(255,77,0,.04); padding:10px 12px; display:flex; flex-direction:column; justify-content:space-between; gap:8px;">
+                <span style="font-family:Spectral,serif; font-style:italic; font-size:16px; line-height:1.4; color:#6f6a62;">Throw a feast. Send every worker somewhere they should not go.<span style="display:inline-block; width:1px; height:15px; background:#ff4d00; margin-left:3px; vertical-align:-3px; animation:emberpulse 1.2s steps(1) infinite;"></span></span>
+                <span style="align-self:flex-end; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:.14em; color:#4a463f;">ENTER TO SET · SHIFT+ENTER FOR A NEW LINE</span>
+              </div>
+              <span style="font-size:13px; line-height:1.45; color:#6f6a62; font-style:italic;">Either way it is the same decision. Yours gets priced, rolled, and lived with.</span>
+            </div>
+          </div>
+          <div style="background:#0d0c0b; padding:13px 15px; display:flex; flex-direction:column; gap:9px;">
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:.24em; color:#6f6a62;">3 · THEN HOW LONG</span>
+            <div style="display:flex; flex-direction:column; gap:5px;">
+              <span style="border:1px solid #2a2622; padding:7px 10px; font-size:13px;">+8 hours <span style="color:#6f6a62; font-style:italic; font-size:12px;">one tick</span></span>
+              <span style="border:1px solid #2a2622; padding:7px 10px; font-size:13px;">+1 day <span style="color:#6f6a62; font-style:italic; font-size:12px;">three ticks</span></span>
+              <span style="border:1px solid #2a2622; background:rgba(255,77,0,.06); padding:7px 10px; font-size:13px; color:#ff4d00;">Leave it running <span style="color:#6f6a62; font-style:italic; font-size:12px;">the real game</span></span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex; gap:14px; align-items:center; flex-wrap:wrap;">
+          <div style="flex:1; min-width:280px; display:flex; align-items:baseline; gap:11px; flex-wrap:wrap; font-size:14px;">
+            <span style="font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:.24em; color:#6f6a62;">SEALING</span>
+            <span style="color:#e9e1d3;">eyes on <b style="color:#ff4d00; font-weight:400;">The Iron Watch</b></span>
+            <span style="color:#2a2622;">·</span>
+            <span style="color:#6f6a62; font-style:italic;">no order given yet</span>
+            <span style="color:#2a2622;">·</span>
+            <span style="color:#e9e1d3;">then <b style="color:#ff4d00; font-weight:400;">leave it running</b></span>
+          </div>
+          <div style="flex:none; display:flex; align-items:center;">
+            <span style="font-family:Spectral,serif; font-style:italic; font-size:14px; color:#6f6a62; padding-right:14px;">nothing moves until you do this</span>
+            <span style="background:#ff4d00; color:#0d0c0b; padding:15px 34px; font-family:Cinzel,serif; font-size:14px; letter-spacing:.22em;">SEAL THE WATCH</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

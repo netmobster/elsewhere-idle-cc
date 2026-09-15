@@ -1,0 +1,932 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Elsewhere</title>
+<meta name="theme-color" content="#0d0c0b">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<!--
+  ELSEWHERE — "Watch Post", ported from CD's reference (web/docs/cd-watch-post-reference.html)
+  to the live game. CD's four rules, kept:
+    1. WHAT IS COMING is the loudest object on the page.
+    2. The turn is a moment you seal. Sealing folds the controls away until the next
+       watch — PRESENTATION ONLY. The server has no seal rule; the world moves
+       either way, and the watch can be reopened.
+    3. WHAT CHANGED while you were gone is its own object, above the prose.
+    4. The briefing keeps the current entry; older ones collapse to one-line rows.
+  Fog grammar: eyes on = crisp bar and a number · from the hill = hatched bar and a
+  hedge · silence = no bar at all. Everything on this page is drawn from the view
+  the server sends, which never carries the true clock of a front you cannot see
+  (web/test_fog.py). The spine's smears are computed here from that view alone.
+  Added past the reference: fit-to-screen, the adjustable column split, text size,
+  the full order catalogue, the ledger, the epilogue, and the free-play clock.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Spectral:ital,wght@0,300;0,400;0,600;1,300&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#0d0c0b; --bg2:#12100e; --bg0:#0f0e0c; --panel:#171513; --ink:#e9e1d3; --mid:#a9a297;
+  --soft:#6f6a62; --dim:#4a463f; --edge:#2a2622; --edge2:#1a1816; --ember:#ff4d00; --ember2:#ff6a1a;
+  --ok:#8fa86b; --partial:#c9973f; --null:#7d7a73; --bad:#a33a22; --bad2:#d2583a;
+  --caps:Cinzel,Georgia,serif; --serif:Spectral,Georgia,serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --z:1; --left:55.5%;
+}
+*{box-sizing:border-box}
+*{scrollbar-width:thin;scrollbar-color:#3a3835 transparent}
+*::-webkit-scrollbar{width:8px;height:8px}
+*::-webkit-scrollbar-thumb{background:#3a3835;border-radius:99px;border:2px solid transparent;background-clip:content-box}
+*::-webkit-scrollbar-thumb:hover{background:var(--ember)}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--serif);-webkit-font-smoothing:antialiased}
+button,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
+[hidden]{display:none!important}
+@keyframes squint{0%,100%{opacity:.5;transform:translateX(0)}50%{opacity:.78;transform:translateX(1px)}}
+@keyframes emberpulse{0%,100%{opacity:.55}50%{opacity:1}}
+@keyframes sweep{to{transform:rotate(360deg)}}
+@keyframes rise{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+.mono{font-family:var(--mono)}
+.lab{font-family:var(--mono);font-size:10px;letter-spacing:.3em;color:var(--soft);text-transform:uppercase}
+.lab.hot{color:var(--ember)}
+.lab.sm{font-size:9px;letter-spacing:.2em}
+
+/* ---------------------------------------------------------------- frame
+   Fit to screen: on a desktop-sized window the page is exactly one viewport and
+   the middle band scrolls inside itself. Anything smaller flows as a document. */
+.app{zoom:var(--z);display:flex;flex-direction:column;max-width:1680px;margin:0 auto;border-left:1px solid var(--edge);border-right:1px solid var(--edge);min-height:100vh}
+@media (min-width:1100px) and (min-height:700px){
+  .app{height:calc(100vh / var(--z));min-height:0;overflow:hidden}
+  .middle{flex:1 1 auto;min-height:0}
+  .col{overflow-y:auto}
+}
+
+.top{flex:0 0 auto;display:flex;align-items:center;gap:16px;padding:10px 20px;border-bottom:1px solid var(--edge);background:var(--bg2);flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px}
+.logo .w{font-family:var(--caps);font-weight:600;font-size:13px;letter-spacing:.22em;display:block}
+.logo .s{font-family:var(--caps);font-size:8px;letter-spacing:.34em;color:var(--ember);display:block}
+.vr{width:1px;height:22px;background:var(--edge)}
+.hold{font-family:var(--caps);font-size:15px;letter-spacing:.08em;white-space:nowrap}
+.when{font-style:italic;font-size:13px;color:var(--soft);white-space:nowrap}
+.meta{margin-left:auto;display:flex;gap:10px;align-items:center;font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--soft);flex-wrap:wrap}
+.pill{border:1px solid var(--edge);padding:3px 9px;white-space:nowrap;background:transparent;color:var(--soft);font-family:var(--mono);font-size:10px;letter-spacing:.14em}
+.pill.hot{border-color:rgba(255,77,0,.5);color:var(--ember)}
+.pill.warn{border-color:var(--bad);color:var(--bad2)}
+button.pill:hover{border-color:var(--ember);color:var(--ink)}
+
+/* ---------------------------------------------------------------- horizon */
+.horizon{flex:0 0 auto;padding:12px 22px 11px;border-bottom:1px solid var(--edge);
+  background:radial-gradient(ellipse at 88% 130%, rgba(255,77,0,.14), transparent 62%), var(--bg);display:flex;align-items:center;gap:26px}
+.hz-words{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.hz-line{font-family:var(--caps);font-size:clamp(21px,2.1vw,32px);line-height:1.12;text-wrap:balance;max-width:44ch}
+.hz-line em{font-style:normal;color:var(--ember)}
+.hz-sub{font-style:italic;font-size:15px;color:var(--mid);max-width:62ch}
+.hz-ring{flex:none;width:100px}
+.hz-ring svg{display:block;width:100px;height:100px}
+
+/* ---------------------------------------------------------------- spine */
+.spine{flex:0 0 auto;padding:9px 22px 8px;border-bottom:1px solid var(--edge);display:flex;flex-direction:column;gap:5px}
+.sp-head{display:flex;justify-content:space-between;align-items:baseline;gap:14px;flex-wrap:wrap}
+.sp-head .r{display:flex;gap:16px;font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--dim)}
+.sp-scroll{overflow-x:auto;overflow-y:hidden}
+.sp-canvas{position:relative;height:104px;min-width:720px;margin:0 6px}
+.sp-rule{position:absolute;left:0;right:0;top:50px;height:2px;background:var(--edge)}
+.sp-tick{position:absolute;top:46px;width:1px;height:10px;background:#2f2b27}
+.sp-now{position:absolute;left:0;top:26px;display:flex;flex-direction:column;align-items:flex-start;gap:3px}
+.sp-now i{width:2px;height:26px;background:var(--ember)}
+.sp-now span{font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--ember);white-space:nowrap}
+.sp-end{position:absolute;right:0;top:56px;display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.sp-end i{width:1px;height:12px;background:var(--edge)}
+.sp-end span{font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--dim);white-space:nowrap}
+.sp-mine{position:absolute;display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:7px;align-items:baseline;max-width:24%;cursor:default}
+.sp-mine .stem{grid-column:1/-1}
+.sp-mine .t{font-family:var(--mono);font-size:9px;letter-spacing:.16em;color:var(--soft);white-space:nowrap}
+.sp-mine .n{font-size:13.5px;color:var(--mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.sp-mine .stem{width:1px;background:var(--edge);margin-left:1px}
+.sp-mine.next .t{color:var(--ember)} .sp-mine.next .n{color:var(--ink);font-weight:600;font-size:14.5px} .sp-mine.next .stem{background:var(--ember)}
+.sp-mine.far .t{color:var(--dim)} .sp-mine.far .n{color:var(--soft);font-style:italic;font-size:13px}
+.sp-theirs{position:absolute;top:56px;display:flex;flex-direction:column;gap:2px;max-width:30%}
+.sp-theirs i{width:1px;height:12px;background:rgba(255,77,0,.6);margin-left:1px}
+.sp-theirs .t{font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--ember);white-space:nowrap}
+.sp-theirs .n{font-style:italic;font-size:12.5px;color:var(--mid);white-space:nowrap}
+.sp-smear{position:absolute;height:14px;background:repeating-linear-gradient(45deg,var(--edge) 0 3px,transparent 3px 7px);border:1px dashed var(--edge);display:flex;align-items:center;padding:0 9px;animation:squint 7s ease-in-out infinite;overflow:hidden}
+.sp-smear span{font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;color:var(--soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sp-smear.open{border-right:0;-webkit-mask-image:linear-gradient(90deg,#000 70%,transparent);mask-image:linear-gradient(90deg,#000 70%,transparent)}
+.sp-legend{display:flex;gap:20px;flex-wrap:wrap;font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--soft);border-top:1px solid var(--edge);padding-top:6px}
+.sp-legend > span{display:flex;align-items:center;gap:7px}
+.sp-legend .warn{margin-left:auto;color:var(--bad2)}
+
+/* ---------------------------------------------------------------- middle */
+.middle{display:grid;grid-template-columns:var(--left) 5px minmax(0,1fr);min-height:0}
+.col{min-height:0;display:flex;flex-direction:column}
+.gutter{background:var(--edge);cursor:col-resize;position:relative;touch-action:none;transition:background .15s}
+.gutter::after{content:"";position:absolute;left:50%;top:50%;width:1px;height:32px;transform:translate(-50%,-50%);background:var(--soft);opacity:.6}
+.gutter:hover,.gutter.drag,.gutter:focus-visible{background:var(--ember)}
+body.dragging{cursor:col-resize;user-select:none}
+.sec{padding:14px 22px;border-bottom:1px solid var(--edge);display:flex;flex-direction:column;gap:10px}
+.sec:last-child{border-bottom:0}
+.sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+
+.chg{display:flex;flex-direction:column;gap:5px}
+.crow{background:var(--panel);border:1px solid var(--edge);border-left:3px solid var(--soft);padding:8px 12px;display:flex;flex-direction:column;gap:6px}
+.crow.live{cursor:pointer} .crow.live:hover{background:#1c1916}
+.crow .l1{display:flex;gap:12px;align-items:baseline}
+.crow .k{font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--null);flex:none;width:92px}
+.crow .x{font-size:14px;color:var(--mid);flex:1;min-width:0}
+.crow .x i{color:var(--soft)}
+.crow .d{font-family:var(--mono);font-size:11px;color:var(--mid);white-space:nowrap}
+.crow.ok{border-left-color:var(--ok)} .crow.ok .k{color:var(--ok)}
+.crow.partial{border-left-color:var(--partial)} .crow.partial .k{color:var(--partial)}
+.crow.misfire,.crow.raid{border-left-color:var(--bad)} .crow.misfire .k,.crow.raid .k{color:var(--bad2)}
+.crow.mega{border-left-color:var(--ember)} .crow.mega .k{color:var(--ember)}
+.crow.moved{border-left-color:rgba(255,77,0,.5)} .crow.moved .k{color:var(--ember)}
+.crow.quiet .x{font-style:italic}
+.crow .roll{display:none}
+.crow.open .roll{display:block}
+.roll{font-family:var(--mono);font-size:11.5px;line-height:1.7;background:var(--bg);border:1px solid var(--edge);padding:7px 11px;overflow-x:auto;white-space:pre;color:var(--mid)}
+.roll b{color:var(--ink);font-weight:400} .roll em{color:var(--ember);font-style:normal}
+
+.brief{font-size:17px;line-height:1.62;color:var(--ink);max-width:66ch;font-weight:300;text-wrap:pretty}
+.brief p{margin:0 0 .6em} .brief p:last-child{margin:0}
+.brief em{font-style:normal;color:var(--ember)}
+.coda{font-size:15px;line-height:1.6;color:var(--mid);font-style:italic;max-width:66ch}
+.older{display:flex;flex-direction:column;gap:1px;background:var(--edge);margin-top:4px}
+.orow{background:var(--bg);padding:8px 12px;display:flex;flex-direction:column;gap:6px;font-family:var(--mono);font-size:11px;color:var(--soft);letter-spacing:.1em;cursor:pointer}
+.orow:hover{background:#110f0d}
+.orow .l1{display:flex;gap:12px;align-items:baseline}
+.orow .l1 span:last-child{margin-left:auto;font-style:italic;font-family:var(--serif);letter-spacing:0;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:55%}
+.orow .body{display:none;font-family:var(--serif);font-size:14.5px;line-height:1.55;letter-spacing:0;color:var(--mid)}
+.orow.open .body{display:block}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--edge);border-bottom:1px solid var(--edge);flex:none}
+.stats div{background:var(--panel);padding:11px 14px;display:flex;flex-direction:column;gap:3px;min-width:0}
+.stats b{font-family:var(--caps);font-weight:400;font-size:24px;line-height:1;font-variant-numeric:tabular-nums}
+.stats span{font-family:var(--caps);font-size:8px;letter-spacing:.26em;color:var(--soft);display:flex;gap:6px;align-items:baseline}
+.stats .hot b,.stats .hot span{color:var(--ember)}
+.stats .dl{font-family:var(--mono);font-size:10px;letter-spacing:0;color:var(--ok)} .stats .dl.neg{color:var(--bad2)}
+
+.nb{display:flex;flex-direction:column;gap:8px}
+.front{border:1px solid var(--edge);background:var(--bg2);padding:10px 13px;display:flex;flex-direction:column;gap:7px}
+.front.eyes{border-color:rgba(255,77,0,.45);background:linear-gradient(180deg,rgba(255,77,0,.05),transparent)}
+.front.silent{border-color:var(--edge2);background:var(--bg0)}
+.front.done{border-color:var(--ember)}
+.f1{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.f1 .nm{display:flex;align-items:baseline;gap:8px;min-width:0}
+.f1 .nm b{font-family:var(--caps);font-weight:400;font-size:13px;letter-spacing:.1em;white-space:nowrap}
+.f1 .nm i{font-size:12px;color:var(--soft)}
+.f1 .rd{font-family:var(--caps);font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.front.eyes .rd{color:var(--ember)} .front.rumour .nm b{color:var(--mid)} .front.rumour .rd{color:var(--soft)}
+.front.silent .nm b{color:var(--soft)} .front.silent .nm i,.front.silent .rd{color:var(--dim)}
+.bar{display:flex;gap:2px;height:10px}
+.bar span{flex:1;background:var(--edge);box-shadow:inset 0 0 0 1px rgba(255,77,0,.25)}
+.bar span.on{background:var(--ember);box-shadow:0 0 8px rgba(255,77,0,.35)}
+.hatch{height:10px;background:repeating-linear-gradient(45deg,var(--edge) 0 3px,transparent 3px 7px);border:1px solid var(--edge);position:relative;animation:squint 5s ease-in-out infinite}
+.hatch b{position:absolute;top:0;bottom:0;background:rgba(255,77,0,.18)}
+.silence{height:10px;display:flex;align-items:center}
+.silence i{flex:1;height:1px;background:var(--edge2)}
+.silence span{font-family:var(--mono);font-size:9px;letter-spacing:.24em;color:var(--dim);padding:0 10px;white-space:nowrap}
+.f3{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.f3 .dg{font-style:italic;font-size:13px;color:var(--ink)}
+.front.rumour .f3 .dg{color:var(--mid)} .front.silent .f3 .dg{color:var(--soft)}
+.f3 .dg small{color:var(--dim);font-size:13px}
+.tag{font-family:var(--caps);font-size:8px;letter-spacing:.2em;border:1px solid var(--edge);color:var(--soft);padding:2px 7px;flex:none;white-space:nowrap}
+.tag.eyes{color:var(--ember);border-color:rgba(255,77,0,.45)} .tag.rum{border-style:dashed} .tag.fx{color:var(--ok);border-color:rgba(143,168,107,.35)}
+.tag.won{background:var(--ember);color:var(--bg);border-color:var(--ember)}
+.f4{display:flex;gap:6px;flex-wrap:wrap}
+.disp{font-size:12px;color:var(--soft)}
+.disp summary{list-style:none;cursor:pointer;font-family:var(--mono);font-size:9px;letter-spacing:.2em}
+.disp summary::-webkit-details-marker{display:none}
+.disp .g{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:7px}
+.pips{display:flex;gap:2px;margin-top:3px} .pips i{width:7px;height:7px;background:var(--edge)} .pips i.on{background:var(--mid)}
+
+.queue{display:flex;flex-direction:column;gap:3px}
+.qrow{display:grid;grid-template-columns:62px 72px minmax(0,1fr) auto;gap:10px;align-items:center;border:1px solid var(--edge);background:var(--bg2);padding:4px 4px 4px 10px;font-size:13px}
+.qrow.next{border-color:rgba(255,77,0,.45)}
+.qrow .t{font-family:var(--mono);font-size:10px;color:var(--soft)} .qrow.next .t{color:var(--ember)}
+.qrow .k{font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--mid);text-transform:uppercase}
+.qrow .w{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--mid)}
+.qrow .x{background:none;border:1px solid transparent;color:var(--soft);font-family:var(--mono);font-size:10px;letter-spacing:.12em;padding:3px 8px}
+.qrow .x:hover{border-color:var(--bad);color:var(--bad2)}
+.fullnote{font-size:12.5px;color:var(--ember);font-style:italic}
+.fullnote button{background:none;border:0;padding:0;color:var(--ink);text-decoration:underline;font:inherit;cursor:pointer}
+.ledger{border:1px solid var(--edge);max-height:260px;overflow-y:auto}
+.lrow{padding:8px 11px;border-top:1px solid var(--edge);cursor:pointer;display:flex;flex-direction:column;gap:5px}
+.lrow:first-child{border-top:0} .lrow:hover{background:#15130f}
+.lrow .l1{display:flex;gap:10px;align-items:baseline}
+.lrow .k{font-family:var(--mono);font-size:9px;letter-spacing:.16em;color:var(--soft);width:72px;flex:none}
+.lrow.ok .k{color:var(--ok)} .lrow.partial .k{color:var(--partial)} .lrow.misfire .k,.lrow.raid .k{color:var(--bad2)}
+.lrow .w{flex:1;min-width:0;font-size:13px;color:var(--mid)}
+.lrow .d{font-family:var(--mono);font-size:10.5px;color:var(--mid)}
+.lrow .roll{display:none} .lrow.open .roll{display:block}
+.empty{font-style:italic;font-size:13px;color:var(--dim);padding:2px 0}
+
+/* ---------------------------------------------------------------- the turn */
+.turn{flex:0 0 auto;border-top:2px solid var(--ember);background:linear-gradient(180deg,rgba(255,77,0,.07),var(--bg2));padding:9px 22px 11px;display:flex;flex-direction:column;gap:8px}
+.turn-h{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.olab{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.turn-h > b{font-family:var(--caps);font-weight:400;font-size:17px;letter-spacing:.14em;color:var(--ember)}
+.turn-h span{font-style:italic;font-size:14px;color:var(--mid)}
+.turn-h .rt{margin-left:auto}
+.tgrid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.5fr) minmax(0,.8fr);gap:1px;background:var(--edge);border:1px solid var(--edge)}
+.tcol{background:var(--bg);padding:8px 12px;display:flex;flex-direction:column;gap:5px;min-width:0}
+.tcol.order{background:linear-gradient(180deg,rgba(255,77,0,.05),transparent 60%),var(--bg);box-shadow:inset 2px 0 0 var(--ember),inset -2px 0 0 var(--ember)}
+.opts{display:flex;flex-direction:column;gap:3px}
+.opts.two{display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px}
+.opt{border:1px solid var(--edge);background:transparent;padding:4px 9px;font-size:13px;color:var(--ink);display:flex;justify-content:space-between;align-items:baseline;gap:8px;text-align:left;min-width:0;transition:border-color .12s,background .12s}
+.opt:hover:not(:disabled){border-color:rgba(255,77,0,.6)}
+.opt .r{color:var(--soft);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.opt .r i{font-style:italic}
+.opt.on{border-color:var(--ember);background:rgba(255,77,0,.1)}
+.opt.on .r{color:var(--ember);font-family:var(--mono);font-size:10px;letter-spacing:.1em}
+.opt.mega{border-color:rgba(163,58,34,.6)} .opt.mega .r{color:var(--bad2)}
+.opt.mega.on{background:rgba(163,58,34,.16);border-color:var(--bad2)}
+.opt.lr .l{color:var(--ember)}
+.opt:disabled{opacity:.35;cursor:not-allowed}
+.at{display:flex;gap:8px;align-items:center;font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--soft)}
+.at select{background:var(--bg);border:1px solid var(--edge);color:var(--ink);font-family:var(--serif);font-size:13px;letter-spacing:0;padding:3px 6px}
+.or{display:flex;align-items:center;gap:10px}
+.or i{flex:1;height:1px;background:var(--edge)}
+.say{border:1px solid var(--ember);background:rgba(255,77,0,.04);display:flex;flex-direction:column}
+.say textarea{background:transparent;border:0;resize:none;padding:6px 11px 0;font-family:var(--serif);font-size:15px;line-height:1.35;color:var(--ink);min-height:30px;max-height:110px;field-sizing:content}
+.say textarea:focus{outline:none}
+.say textarea::placeholder{color:var(--soft);font-style:italic}
+.say .hint{align-self:flex-end;font-family:var(--mono);font-size:9px;letter-spacing:.14em;color:var(--dim);padding:0 9px 4px}
+.note{font-size:12.5px;line-height:1.4;color:var(--soft);font-style:italic}
+.sealbar{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.sealing{flex:1;min-width:280px;display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;font-size:14px}
+.sealing b{color:var(--ember);font-weight:400}
+.sealing .sep{color:var(--edge)}
+.sealing .qt{color:var(--soft);font-style:italic}
+.seal{background:var(--ember);color:var(--bg);border:0;padding:10px 26px;font-family:var(--caps);font-size:14px;letter-spacing:.22em;transition:background .15s}
+.seal:hover{background:var(--ember2)} .seal:disabled{opacity:.5;cursor:progress}
+.either{font-style:italic;font-size:13.5px;color:var(--soft)}
+
+.sealed{flex:0 0 auto;border-top:2px solid var(--ember);background:linear-gradient(180deg,rgba(255,77,0,.06),var(--bg2));padding:12px 22px;display:flex;flex-direction:column;gap:9px}
+.sealed .l1{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+.sealed .l1 > b{font-family:var(--caps);font-weight:400;font-size:15px;letter-spacing:.16em;color:var(--ember)}
+.sealed .l1 > span{font-size:14px;color:var(--mid)}
+.sealed .l1 .again{margin-left:auto}
+.priced{border:1px dashed var(--edge);padding:7px 12px;display:grid;grid-template-columns:auto minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr);gap:3px 12px;font-size:13px;margin:0}
+.priced dt{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--ember);padding-top:2px}
+.priced dd{margin:0;color:var(--mid)}
+.priced .why{grid-column:1/-1;font-style:italic;font-size:12px;color:var(--soft);margin-top:3px}
+
+.btn{border:1px solid var(--edge);background:transparent;padding:6px 12px;font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--mid)}
+.btn:hover{border-color:var(--ember);color:var(--ink)}
+.btn.solid{background:var(--ember);border-color:var(--ember);color:var(--bg)}
+
+/* ---------------------------------------------------------------- epilogue */
+dialog.epi{padding:0;border:1px solid var(--ember);background:var(--bg);color:var(--ink);width:min(760px,94vw);max-height:90vh}
+dialog.epi::backdrop{background:rgba(0,0,0,.74);backdrop-filter:blur(3px)}
+.epi-in{display:flex;flex-direction:column;max-height:90vh}
+.epi-head{display:flex;gap:22px;align-items:center;padding:22px 24px 16px;flex-wrap:wrap}
+.ring{position:relative;width:160px;height:160px;flex:none}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .track{fill:none;stroke:var(--panel);stroke-width:10}
+.ring .fill{fill:none;stroke:var(--ember);stroke-width:10;stroke-dasharray:0 1000;transition:stroke-dasharray 2.2s cubic-bezier(.2,.8,.2,1)}
+.ring .num{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.ring .num b{font-family:var(--caps);font-weight:400;font-size:42px;line-height:1}
+.ring .num span{font-family:var(--mono);font-size:8px;letter-spacing:.3em;color:var(--soft)}
+.epi-head h2{font-family:var(--caps);font-weight:400;font-size:26px;letter-spacing:.06em;margin:4px 0}
+.epi-head p{margin:0;color:var(--mid);font-style:italic}
+.etabs{display:flex;gap:4px;padding:0 24px;border-bottom:1px solid var(--edge)}
+.etab{background:none;border:0;border-bottom:2px solid transparent;color:var(--soft);padding:8px 12px;font-family:var(--mono);font-size:10px;letter-spacing:.2em}
+.etab.on{color:var(--ember);border-bottom-color:var(--ember)}
+.ebody{overflow-y:auto;padding:16px 24px 20px;min-height:0;flex:1}
+.ebody p{margin:0 0 .9em;font-size:16px;line-height:1.7;font-weight:300}
+.sline{display:grid;grid-template-columns:1fr auto;gap:6px 18px;font-size:14px}
+.sline span{color:var(--mid)} .sline b{font-family:var(--mono);font-weight:400;text-align:right}
+.efoot{display:flex;gap:8px;justify-content:flex-end;padding:11px 24px 15px;border-top:1px solid var(--edge);flex-wrap:wrap}
+
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--panel);border:1px solid var(--bad);padding:9px 15px;font-size:13px;z-index:60;max-width:min(560px,92vw);animation:rise .25s ease both}
+
+/* ---------------------------------------------------------------- narrow */
+@media (max-width:1099px){
+  .middle{grid-template-columns:minmax(0,1fr)}
+  .gutter{display:none}
+  .tgrid{grid-template-columns:minmax(0,1fr)}
+  .turn-h{order:2}                 /* choose first, seal at the bottom */
+  .turn{padding-bottom:18px}
+  .hz-ring{width:96px} .hz-ring svg{width:96px;height:96px}
+  .when{display:none}
+}
+@media (max-width:640px){
+  .top{gap:10px;padding:9px 12px}
+  .meta #aiPill,.meta #seedPill,.vr{display:none}
+  .horizon{padding:14px;gap:14px}
+  .spine,.sec,.turn,.sealed{padding-left:14px;padding-right:14px}
+  .stats b{font-size:20px}
+  .opts.two{grid-template-columns:1fr}
+  .sp-legend .warn{margin-left:0}
+  .crow .k{width:auto}
+  .lab{letter-spacing:.2em}
+  .stats{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header class="top">
+    <span class="logo"><svg width="26" height="26" viewBox="0 0 64 64" aria-hidden="true"><g transform="rotate(-90 32 32)"><circle cx="32" cy="32" r="26" fill="none" stroke="#2a2622" stroke-width="5" stroke-dasharray="13.6 2.6"/><circle cx="32" cy="32" r="26" fill="none" stroke="#ff4d00" stroke-width="5" stroke-dasharray="98 66"/></g><circle cx="32" cy="32" r="15" fill="#e9e1d3"/><circle cx="40" cy="26" r="15" fill="#12100e"/></svg>
+      <span><span class="w">ELSEWHERE</span><span class="s">IDLE WORLD</span></span></span>
+    <span class="vr"></span>
+    <span class="hold" id="holdName">&hellip;</span>
+    <span class="when" id="holdWhen">rolling a world</span>
+    <span class="meta">
+      <span class="pill" id="timePill">&hellip;</span>
+      <span class="pill" id="aiPill">&hellip;</span>
+      <span id="seedPill">SEED &hellip;</span>
+      <button class="pill" id="fsDown" aria-label="Smaller text">A&minus;</button><button class="pill" id="fsUp" aria-label="Larger text">A+</button>
+      <button class="pill" id="newWorld">NEW WORLD</button>
+    </span>
+  </header>
+
+  <section class="horizon" aria-label="What is coming">
+    <div class="hz-words">
+      <span class="lab hot">WHAT IS COMING</span>
+      <div class="hz-line" id="hzLine">&hellip;</div>
+      <div class="hz-sub" id="hzSub"></div>
+    </div>
+    <div class="hz-ring" id="hzRing"></div>
+  </section>
+
+  <section class="spine" aria-label="The next three days">
+    <div class="sp-head"><span class="lab">THE NEXT THREE DAYS, AS FAR AS YOU KNOW IT</span>
+      <span class="r"><span id="spQueue">QUEUE 0/5 · ONE FIRES EVERY 8H</span><span>TIME RUNS LEFT TO RIGHT</span></span></div>
+    <div class="sp-scroll"><div class="sp-canvas" id="spine"></div></div>
+    <div class="sp-legend" id="spLegend"></div>
+  </section>
+
+  <div class="middle" id="middle">
+    <div class="col" id="colLeft">
+      <div class="sec">
+        <div class="sec-h"><span class="lab" id="chgTitle">WHAT CHANGED WHILE YOU WERE GONE</span><span class="lab sm" id="chgWhen"></span></div>
+        <div class="chg" id="changes"></div>
+      </div>
+      <div class="sec" style="flex:1">
+        <div class="sec-h"><span class="lab hot">THE BRIEFING</span><span class="lab sm" id="briefWhen"></span></div>
+        <div class="brief" id="brief"></div>
+        <div class="coda">The engine already rolled. This is only the reading.</div>
+        <div class="older" id="older"></div>
+        <div class="lab sm" id="olderLab" style="color:var(--dim)"></div>
+      </div>
+    </div>
+    <div class="gutter" id="gutter" role="separator" aria-orientation="vertical" aria-label="Resize the columns" tabindex="0" title="Drag to resize · double-click to reset"></div>
+    <div class="col" id="colRight">
+      <div class="stats" id="stats"></div>
+      <div class="sec" id="queueSec">
+        <div class="sec-h"><span class="lab" id="qTitle">THE QUEUE</span><span class="lab sm">NOTHING IS SPENT UNTIL IT FIRES</span></div>
+        <div class="queue" id="queue"></div>
+      </div>
+      <div class="sec">
+        <div class="sec-h"><span class="lab">NEIGHBOURS</span><span class="lab sm hot" id="nbCount"></span></div>
+        <div class="nb" id="fronts"></div>
+      </div>
+      <div class="sec">
+        <div class="sec-h"><span class="lab">THE LEDGER</span><span class="empty" id="ledgerNote"></span></div>
+        <div class="ledger" id="ledger" hidden></div>
+      </div>
+    </div>
+  </div>
+
+  <section class="turn" id="turn" aria-label="Take the turn">
+    <div class="turn-h"><b>TAKE THE TURN</b>
+      <div class="sealing" id="sealing"></div>
+      <span class="either">the world moves either way</span>
+      <button class="seal" id="sealBtn">SEAL THE WATCH</button></div>
+    <div class="tgrid">
+      <div class="tcol"><span class="lab sm">1 · WHERE THE EYES GO</span><div class="opts" id="tEyes"></div></div>
+      <div class="tcol order">
+        <div class="olab"><span class="lab sm hot" id="tOrderLab">2 · THE ORDER</span><span class="at" id="tAt">AT <select id="tTarget" aria-label="Which neighbour the order is aimed at"></select><span id="tAtNote"></span></span></div>
+        <div class="opts two" id="tOrders"></div>
+        <div class="fullnote" id="tFull" hidden>All five slots are spoken for. <button id="tFullGo">Withdraw one</button> to give a new order &mdash; or leave the queue to run.</div>
+        <div class="say"><textarea id="tSay" rows="1" placeholder="Or say it yourself. Throw a feast. Send every worker somewhere they should not go." aria-label="Or say it yourself"></textarea><span class="hint">SAME DECISION · PRICED, ROLLED, LIVED WITH · ENTER TO SEAL</span></div>
+      </div>
+      <div class="tcol"><span class="lab sm">3 · THEN HOW LONG</span><div class="opts" id="tTime"></div></div>
+    </div>
+  </section>
+
+  <section class="sealed" id="sealed" hidden aria-label="The sealed watch">
+    <div class="l1"><b>SEALED</b><span id="sealedWhat"></span><button class="btn again" id="reopen">OPEN THE WATCH AGAIN</button></div>
+    <div id="sealedPriced"></div>
+  </section>
+</div>
+
+<dialog class="epi" id="epi">
+  <div class="epi-in">
+    <div class="epi-head">
+      <div class="ring"><svg viewBox="0 0 160 160"><circle class="track" cx="80" cy="80" r="70" pathLength="1000"/><circle class="fill" id="ringFill" cx="80" cy="80" r="70" pathLength="1000"/></svg>
+        <div class="num"><b id="ringNum">0</b><span>OF 1000</span></div></div>
+      <div><span class="lab hot">THE FOG LIFTS</span><h2 id="epiRank">&mdash;</h2><p id="epiLine"></p></div>
+    </div>
+    <div class="etabs"><button class="etab on" data-t="story">THE CHRONICLE</button><button class="etab" data-t="score">THE SCORE LINE</button></div>
+    <div class="ebody" id="ebody"></div>
+    <div class="efoot"><button class="btn" id="copyEpi">COPY</button><button class="btn" id="closeEpi">SEE THE BOARD</button><button class="btn solid" id="againEpi">ROLL A NEW WORLD</button></div>
+  </div>
+</dialog>
+
+<script>
+(() => {
+"use strict";
+const store = {
+  get(k, d = null) { try { const v = localStorage.getItem(k); return v === null ? d : v; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch {} },
+  del(k) { try { localStorage.removeItem(k); } catch {} },
+};
+const $ = (id) => document.getElementById(id);
+// Everything from the server is escaped — names, the narrator's prose, and above
+// all the player's own typed orders, which come back into every render.
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const H = 3.6e6, WINDOW = 72;
+
+let SID = store.get("elsewhere-sid"), P = null, busy = false, prev = null, lastWatch = null;
+const pick = {eyes: null, order: null, hours: 0};      // the turn being composed
+const CAT = {
+  disrupt: ["Disrupt", "slow their clock"], scout: ["Scout", "a real number"], trade: ["Trade", "coin from their openness"],
+  fortify: ["Fortify", "harden the walls"], invest: ["Invest", "more coin every day"], mega: ["Mega", "one throw"],
+};
+const qs = new URLSearchParams(location.search);
+if (qs.get("owner")) { store.set("elsewhere-owner", qs.get("owner")); history.replaceState(null, "", location.pathname); }
+
+async function api(path, body) {
+  const o = {method: body === undefined ? "GET" : "POST", headers: {}};
+  if (body !== undefined) { o.headers["Content-Type"] = "application/json"; o.body = JSON.stringify(body); }
+  if (path === "/api/session" && o.method === "POST") { const t = store.get("elsewhere-owner"); if (t) o.headers["X-Elsewhere-Owner"] = t; }
+  const r = await fetch(path, o); let d = null; try { d = await r.json(); } catch {}
+  if (!r.ok) { const e = new Error((d && d.error) || `HTTP ${r.status}`); e.data = d; e.status = r.status; throw e; }
+  return d;
+}
+function toast(m) { const t = document.createElement("div"); t.className = "toast"; t.textContent = m; document.body.appendChild(t); setTimeout(() => t.remove(), 4200); }
+const shortName = (n) => String(n || "").replace(/^The /, "");
+const front = (id) => (P && P.view.fronts.find(f => f.id === id)) || null;
+const nameOf = (id) => (front(id) || {}).name || id || "";
+const hrs = (h) => { const m = Math.max(1, Math.floor(h * 60)); return m < 60 ? `${m}m` : h < 36 ? `${Math.floor(m / 60)}h${m % 60 ? " " + (m % 60) + "m" : ""}` : h < 96 ? `${Math.floor(h / 24)}d ${Math.floor(h % 24)}h` : `${Math.round(h / 24)} days`; };
+const hFrom = (iso) => (new Date(iso) - Date.now()) / H;
+const daysWord = (d) => d < 1 ? `${Math.max(1, Math.round(d * 24))} hours` : `${Math.round(d)} day${Math.round(d) === 1 ? "" : "s"}`;
+
+// ---------------------------------------------------------------- the roll, and its ladder
+// The ladder a roll was judged on comes from the ledger row. No copy lives here.
+function ladder(r) {
+  if (r.t === "clock") return `(${esc(r.threshold)} advances)`;
+  if (r.t === "mega") return `(${esc(r.threshold)} lands)`;
+  return r.ladder ? `(${esc(r.ladder.ok)} lands · ${esc(r.ladder.partial)} partial)` : "";
+}
+const mods = (r) => (r.mods || []).map(([k, v]) => `${v < 0 ? "−" : "+"} ${esc(k)} <b>${Math.abs(v)}</b>`).join("   ");
+const rollOf = (r) => `${r.t === "mega" ? "2d6" : "d6"} <b>${esc(r.roll)}</b>   ${mods(r)}   =  <em>${esc(r.total)}</em>   ${ladder(r)}`;
+
+// ---------------------------------------------------------------- what changed
+const rowKey = (r) => [r.t, r.at, r.what || r.front || "", r.roll ?? "", r.total ?? ""].join("|");
+const seen = () => { try { return new Set(JSON.parse(store.get(`elsewhere-seen-${SID}`, "[]"))); } catch { return new Set(); } };
+function takeNew(rows) {
+  const s = seen(), fresh = [];
+  [...rows].reverse().forEach(r => { const k = rowKey(r); if (!s.has(k)) { s.add(k); fresh.push(r); } });
+  store.set(`elsewhere-seen-${SID}`, JSON.stringify([...s].slice(-500)));
+  return fresh;
+}
+function changeRow(r) {
+  if (r.t === "action") {
+    const o = r.outcome || "", k = {ok: "LANDED", partial: "PART-LANDED", refund: "CALLED OFF", misfire: "MISFIRED"}[o] || o.toUpperCase();
+    const bits = [];
+    if (r.gain) bits.push(`+${r.gain}`); else if (r.cost) bits.push(`−${r.cost - (r.refund || 0)}`);
+    const extra = [...(r.granted || []), r.hands_lost ? `${r.hands_lost} hands lost` : ""].filter(Boolean).join(" · ");
+    return {cls: o, k, x: `${esc(r.what)}${String(r.what).includes(nameOf(r.target)) ? "" : ` <i>— ${esc(shortName(nameOf(r.target)))}</i>`}${extra ? ` <i>· ${esc(extra)}</i>` : ""}`, d: bits.join(" "), roll: rollOf(r) + (r.said ? `\n“${esc(r.said)}”` : "")};
+  }
+  if (r.t === "mega") return {cls: "mega", k: "THE GREAT WORK", x: `${esc(r.what || "")} <i>${esc(r.outcome || "")}${r.mutation ? " · " + esc(r.mutation) : ""}</i>`, d: "", roll: rollOf(r)};
+  if (r.t === "raid") return {cls: "raid", k: "RAIDED", x: `${esc(nameOf(r.front))} came for the purse`, d: `−${esc(r.taken)}`, roll: ""};
+  if (r.t === "clock" && r.gained) return {cls: "moved", k: "MOVED", x: `${esc(nameOf(r.front))} <i>now ${esc(r.seg)}</i>`, d: `+${esc(r.gained)}`, roll: rollOf(r)};
+  return null;
+}
+function setChanges(rows, label) {
+  const items = rows.map(changeRow).filter(Boolean);
+  if (!items.length) return false;
+  store.set(`elsewhere-changes-${SID}`, JSON.stringify({label, at: Date.now(), items}));
+  return true;
+}
+function renderChanges() {
+  let rec = null; try { rec = JSON.parse(store.get(`elsewhere-changes-${SID}`, "null")); } catch {}
+  $("chgTitle").textContent = rec && rec.label ? rec.label : "WHAT CHANGED WHILE YOU WERE GONE";
+  $("chgWhen").textContent = rec ? `${Math.max(0, Math.round((Date.now() - rec.at) / 6e4))} MIN AGO` : "";
+  if (!rec || !rec.items.length) {
+    $("changes").innerHTML = `<div class="crow quiet"><div class="l1"><span class="k">NOTHING</span><span class="x">Nothing new since you last looked. ${P.view.tick ? "" : "The engine has not rolled yet."}</span></div></div>`;
+    return;
+  }
+  $("changes").innerHTML = rec.items.map(c => `<div class="crow ${c.cls}${c.roll ? " live" : ""}" tabindex="${c.roll ? 0 : -1}"><div class="l1"><span class="k">${c.k}</span><span class="x">${c.x}</span><span class="d">${esc(c.d)}</span></div>${c.roll ? `<div class="roll">${c.roll}</div>` : ""}</div>`).join("");
+  $("changes").querySelectorAll(".crow.live").forEach(r => { r.onclick = () => r.classList.toggle("open"); r.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); r.classList.toggle("open"); } }; });
+}
+
+// ---------------------------------------------------------------- horizon
+function renderHorizon() {
+  const v = P.view;
+  if (v.settled) {
+    $("hzLine").innerHTML = `The world has <em>settled</em>.`;
+    $("hzSub").innerHTML = `The fog is gone. <a href="#" id="hzEpi" style="color:var(--ember)">Read what happened</a>.`;
+    const a = $("hzEpi"); if (a) a.onclick = (e) => { e.preventDefault(); openEpi(); };
+    $("hzRing").innerHTML = ""; return;
+  }
+  const top = (v.horizon || [])[0];
+  if (!top) { $("hzLine").textContent = "Nothing has shown itself yet."; $("hzSub").textContent = ""; }
+  else {
+    const f = front(top.id) || {};
+    const first = top.line.split(/(?<=\.)\s/)[0];
+    $("hzLine").innerHTML = esc(first).replace(esc(top.front), `<em>${esc(top.front)}</em>`);
+    if (top.rumour && top.hours == null) {
+      const m = f.memory || {};
+      $("hzSub").textContent = m.never_watched
+        ? `You have never had eyes on a faction of ${f.style || "strangers"}. Unknown is not zero.`
+        : `${daysWord(m.dark_days)[0].toUpperCase() + daysWord(m.dark_days).slice(1)} of silence from a faction of ${f.style}. Unknown is not zero.`;
+    } else {
+      $("hzSub").textContent = `${f.watched ? "On your own count." : "A guess from the hill."} They want ${f.wants}.`;
+    }
+  }
+  // the countdown ring: how far through this eight-hour watch the world is
+  const last = new Date(v.world.when).getTime(), now = Date.now();
+  const ahead = last - now > 6e4;
+  const next = last + 8 * H, left = (next - now) / H, frac = ahead ? 1 : Math.min(1, Math.max(0, 1 - left / 8));
+  const C = 2 * Math.PI * 46, off = C * (1 - frac);
+  $("hzRing").innerHTML = `<svg viewBox="0 0 120 120" role="img" aria-label="${ahead ? "The world is ahead of the clock" : "Next tick in " + hrs(left)}">
+    <circle cx="60" cy="60" r="54" fill="none" stroke="#2a2622" stroke-width="1"/>
+    <circle cx="60" cy="60" r="46" fill="none" stroke="#171513" stroke-width="10"/>
+    <circle cx="60" cy="60" r="46" fill="none" stroke="#ff4d00" stroke-width="10" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" transform="rotate(-90 60 60)" style="animation:emberpulse 4s ease-in-out infinite"/>
+    <g style="animation:sweep 60s linear infinite;transform-origin:60px 60px"><line x1="60" y1="60" x2="60" y2="18" stroke="#6f6a62" stroke-width="1"/></g>
+    <text x="60" y="58" text-anchor="middle" font-family="Cinzel" font-size="${ahead ? 15 : 20}" fill="#e9e1d3">${ahead ? "AHEAD" : esc(hrs(left))}</text>
+    <text x="60" y="74" text-anchor="middle" font-family="IBM Plex Mono" font-size="7" letter-spacing="2.6" fill="#6f6a62">${ahead ? "OF THE CLOCK" : "NEXT TICK"}</text>
+    <text x="60" y="89" text-anchor="middle" font-family="Spectral" font-style="italic" font-size="8" fill="#6f6a62">${ahead ? "you skipped " + Math.round((last - now) / H) + "h" : "here or not"}</text></svg>`;
+}
+
+// ---------------------------------------------------------------- the spine
+// Above the line is yours, with real countdowns. Below is theirs. Every position
+// here is computed from the view alone — which never carries the true clock of a
+// front you cannot see — so a smear cannot be read like a bar.
+function renderSpine() {
+  const v = P.view, x = (h) => `${Math.max(0, Math.min(100, (h / WINDOW) * 100)).toFixed(2)}%`;
+  const out = [];
+  const lastTick = new Date(v.world.when).getTime();
+  for (let t = lastTick + 8 * H; t < Date.now() + WINDOW * H; t += 8 * H) {
+    const h = (t - Date.now()) / H; if (h > 0) out.push(`<span class="sp-tick" style="left:${x(h)}" title="a tick"></span>`);
+  }
+  out.push(`<div class="sp-rule"></div><div class="sp-now"><i></i><span>NOW · ${new Date().toTimeString().slice(0, 5)}</span></div>`);
+  out.push(`<div class="sp-end"><i></i><span>+3 DAYS</span></div>`);
+
+  // yours: lanes so labels never collide
+  const q = v.queue.map((o, i) => ({o, i, h: hFrom(o.fires)}));
+  const inside = q.filter(e => e.h <= WINDOW), beyond = q.filter(e => e.h > WINDOW);
+  const laneEnd = [-1, -1];
+  let crowded = 0;
+  inside.forEach((e, n) => {
+    const pos = (e.h / WINDOW) * 100; const lane = laneEnd.findIndex(end => pos > end + 1);
+    if (lane < 0) { crowded++; out.push(`<span class="sp-tick" style="left:${x(e.h)};top:40px;height:10px;background:var(--ember)" title="${esc(e.o.what)}"></span>`); return; }
+    laneEnd[lane] = pos + 25;
+    const flip = pos > 74;      // near the right edge, hang the label to the left of its mark
+    const top = [2, 20][lane], stem = 50 - top - 17;
+    const label = e.o.kind === "improvise" ? e.o.what : `${CAT[e.o.kind] ? CAT[e.o.kind][0] : e.o.kind} · ${shortName(nameOf(e.o.target))}`;
+    out.push(`<div class="sp-mine${n === 0 ? " next" : ""}" style="left:${x(e.h)};top:${top}px;${flip ? "transform:translateX(-100%);text-align:right" : ""}" title="${esc(e.o.what)}">
+      <span class="t">${esc(hrs(Math.max(0, e.h)))}</span><span class="n">${esc(label)}</span><span class="stem" style="height:${Math.max(6, stem)}px;${flip ? "justify-self:end" : ""}"></span></div>`);
+  });
+  if (beyond.length) out.push(`<div class="sp-mine far" style="right:0;left:auto;top:2px"><span class="t">BEYOND 3 DAYS</span><span class="n">${beyond.length} more order${beyond.length === 1 ? "" : "s"}</span></div>`);
+  if (!q.length) out.push(`<div class="sp-mine far" style="left:2%;top:14px;max-width:60%"><span class="t">NOTHING QUEUED</span><span class="n">an empty queue earns nothing while you are gone</span></div>`);
+
+  // theirs
+  const silent = [];
+  let smears = 0;
+  v.fronts.forEach(f => {
+    if (f.done) return;
+    const hz = (v.horizon || []).find(r => r.id === f.id);
+    if (f.sight === "exact") {
+      if (!hz || hz.hours == null || f.clock == null) return;   // watched, and not moving yet
+
+      const remaining = 10 - f.clock, per = hz.hours / Math.max(1, remaining);
+      if (per <= WINDOW) out.push(`<div class="sp-theirs" style="left:${x(per)}"><i></i><span class="t">${esc(shortName(f.name).toUpperCase())} · SEGMENT ${f.clock + 1}</span><span class="n">on your count, not theirs</span></div>`);
+      if (hz.hours <= WINDOW) out.push(`<div class="sp-theirs" style="left:${x(hz.hours)};top:80px"><i style="background:var(--ember)"></i><span class="t">${esc(shortName(f.name).toUpperCase())} FINISHES</span></div>`);
+    } else if (f.sight === "band" && f.band) {
+      // a hill read is a band, never a number: finish somewhere between the fastest
+      // it could possibly run from the top of the band and a slow crawl from the bottom
+      const fast = (10 - f.band.hi) / 2 * 8, slow = (10 - f.band.lo) / 0.34 * 8;
+      if (fast < WINDOW) {
+        const open = slow > WINDOW, top = 58 + 15 * (smears++ % 3);
+        out.push(`<div class="sp-smear${open ? " open" : ""}" style="left:${x(fast)};right:${open ? "0" : (100 - (slow / WINDOW) * 100).toFixed(2) + "%"};top:${top}px"><span>THE ${esc(shortName(f.name).toUpperCase())} FINISHES SOMEWHERE IN HERE${open ? " · OR LATER" : ""} · IF THE HILL IS RIGHT</span></div>`);
+      }
+    } else {
+      silent.push(f.name);
+    }
+  });
+  $("spine").innerHTML = out.join("");
+  $("spQueue").textContent = `QUEUE ${v.queue.length}/5 · ONE FIRES EVERY 8H${crowded ? ` · ${crowded} MARKED, NOT LABELLED` : ""}`;
+  const warn = silent.length ? `<span class="warn">${esc(silent.map(n => n.toUpperCase()).join(" AND "))} ${silent.length === 1 ? "IS" : "ARE"} NOT ON THIS SPINE. THAT IS THE PROBLEM.</span>` : "";
+  $("spLegend").innerHTML = `<span><span style="width:14px;height:2px;background:var(--ember)"></span>ABOVE THE LINE · YOURS</span>
+    <span><span style="width:14px;height:2px;background:var(--edge)"></span>BELOW · THEIRS</span>
+    <span><span style="width:14px;height:8px;background:repeating-linear-gradient(45deg,#2a2622 0 3px,transparent 3px 7px)"></span>A SMEAR IS A THING YOU CANNOT TIME</span>${warn}`;
+}
+
+// ---------------------------------------------------------------- briefing
+function renderBriefing() {
+  const narr = (P.messages || []).filter(m => m.role === "narrator");
+  const cur = narr[narr.length - 1];
+  const watched = P.view.fronts.find(f => f.watched);
+  if (cur) {
+    let html = esc(cur.text).split(/\n\s*\n/).map(p => `<p>${p}</p>`).join("");
+    html = html.replace(/The engine already rolled\. This is only the reading\./g, "");
+    if (watched) html = html.split(esc(watched.name)).join(`<em>${esc(watched.name)}</em>`);
+    $("brief").innerHTML = html;
+    $("briefWhen").textContent = `DAY ${cur.day || P.view.day} · ${String(cur.watch || P.view.world.watch_name).replace(/^the /, "").replace(/ watch$/, "").toUpperCase()}`;
+  } else { $("brief").innerHTML = `<p class="empty">No briefing yet.</p>`; }
+  const older = narr.slice(0, -1).reverse();
+  $("older").innerHTML = older.map((m, i) => `<div class="orow" tabindex="0"><div class="l1"><span style="color:var(--edge)">▸</span><span>DAY ${esc(m.day || "?")} · ${esc(String(m.watch || "").toUpperCase())}</span><span>${esc(m.text.split(/[.!?]/)[0])}</span></div><div class="body">${esc(m.text)}</div></div>`).join("");
+  $("olderLab").textContent = older.length ? "↑ EARLIER BRIEFINGS · COLLAPSED" : "";
+  $("older").querySelectorAll(".orow").forEach(r => { r.onclick = () => r.classList.toggle("open"); r.onkeydown = (e) => { if (e.key === "Enter") r.classList.toggle("open"); }; });
+}
+
+// ---------------------------------------------------------------- the board
+function renderBoard() {
+  const v = P.view, h = v.holding;
+  const dl = (k) => { if (!prev || prev[k] === h[k]) return ""; const d = Math.round((h[k] - prev[k]) * 10) / 10; return `<i class="dl${d < 0 ? " neg" : ""}">${d > 0 ? "+" : ""}${d}</i>`; };
+  const full = v.queue.length >= 5;
+  $("stats").innerHTML = `<div><b>${esc(h.coin)}</b><span>COIN ${dl("coin")}</span></div>
+    <div><b>${esc(h.hands)}</b><span>HANDS ${dl("hands")}</span></div>
+    <div class="${full ? "hot" : ""}"><b>${v.queue.length}/5</b><span>${full ? "QUEUE FULL" : "QUEUE"}</span></div>
+    <div><b style="font-size:19px;line-height:1.25">${esc(String(h.standing).toUpperCase())}</b><span>STANDING</span></div>`;
+  prev = {coin: h.coin, hands: h.hands};
+  $("qTitle").textContent = `THE QUEUE · ${v.queue.length}/5`;
+  $("queue").innerHTML = v.queue.length ? v.queue.map((q, i) => `<div class="qrow${i === 0 ? " next" : ""}"><span class="t">${esc(hrs(Math.max(0, hFrom(q.fires))))}</span><span class="k">${esc(q.kind === "improvise" ? "said" : q.kind)}</span><span class="w" title="${esc(q.what)}">${esc(q.what)}</span>${v.settled || P.expired ? "<span></span>" : `<button class="x" data-cancel="${i}" aria-label="Withdraw this order">WITHDRAW</button>`}</div>`).join("")
+    : `<div class="empty">Empty. An empty queue earns nothing while you are gone.</div>`;
+  $("queue").querySelectorAll("[data-cancel]").forEach(x => x.onclick = () => withdraw(+x.dataset.cancel));
+  const fx = v.effects || [];
+  $("nbCount").textContent = v.watch.mode === "general" ? "WATCHING FROM THE HILL" : `${v.fronts.filter(f => f.watched).length} OF ${v.fronts.length} WATCHED`;
+  $("fronts").innerHTML = v.fronts.map(f => {
+    const m = f.memory || {}, tags = fx.filter(e => e.front === f.name).map(e => `<span class="tag fx">${esc(e.kind.toUpperCase())} ${esc(e.value)}</span>`).join("");
+    const disp = `<details class="disp"><summary>+ DISPOSITION</summary><div style="margin-top:6px;font-style:italic">They want ${esc(f.wants)}.</div><div class="g">
+      ${["aggression", "expansive", "openness"].map(k => `<div><span class="lab sm">${k}</span><span class="pips">${[...Array(6).keys()].map(i => `<i class="${i < f[k] ? "on" : ""}"></i>`).join("")}</span></div>`).join("")}</div></details>`;
+    if (f.done) {
+      return `<div class="front done"><div class="f1"><span class="nm"><b>${esc(f.name.toUpperCase())}</b><i>${esc(f.style)}</i></span><span class="rd" style="color:var(--ember)">10/10</span></div>
+        <div class="bar">${"<span class='on'></span>".repeat(10)}</div><div class="f3"><span class="dg">${esc(f.doing)}</span><span class="tag won">GOT WHAT IT WANTED</span></div></div>`;
+    }
+    if (f.sight === "exact") {
+      return `<div class="front eyes"><div class="f1"><span class="nm"><b>${esc(f.name.toUpperCase())}</b><i>${esc(f.style)}</i></span><span class="rd">${esc(f.label)}</span></div>
+        <div class="bar">${[...Array(10).keys()].map(i => `<span class="${i < (f.clock || 0) ? "on" : ""}"></span>`).join("")}</div>
+        <div class="f3"><span class="dg">${esc(f.doing)}</span><span class="tag eyes">EYES ON</span></div>${tags ? `<div class="f4">${tags}</div>` : ""}${disp}</div>`;
+    }
+    if (f.sight === "band" && f.band) {
+      return `<div class="front rumour"><div class="f1"><span class="nm"><b>${esc(f.name.toUpperCase())}</b><i>${esc(f.style)}</i></span><span class="rd">~ ${esc(f.band.word)}</span></div>
+        <div class="hatch"><b style="left:${f.band.lo * 10}%;right:${100 - f.band.hi * 10}%"></b></div>
+        <div class="f3"><span class="dg">${esc(f.doing)}</span><span class="tag rum">FROM THE HILL</span></div>${tags ? `<div class="f4">${tags}</div>` : ""}${disp}</div>`;
+    }
+    const word = m.never_watched ? "NEVER WATCHED" : `NO WORD IN ${daysWord(m.dark_days).toUpperCase()}`;
+    const asof = m.never_watched ? "you have never seen it" : `last read ${m.last_eyes_seg}, ${daysWord(m.dark_days)} ago`;
+    return `<div class="front silent"><div class="f1"><span class="nm"><b>${esc(f.name.toUpperCase())}</b><i>${esc(f.style)}</i></span><span class="rd">—</span></div>
+      <div class="silence"><i></i><span>${esc(word)}</span><i></i></div>
+      <div class="f3"><span class="dg">${esc(f.doing)} <small>— ${esc(asof)}</small></span></div>${tags ? `<div class="f4">${tags}</div>` : ""}${disp}</div>`;
+  }).join("");
+
+  const rows = (v.ledger || []).filter(r => r.t !== "clock" || r.gained).slice(0, 60);
+  $("ledgerNote").textContent = rows.length ? `${rows.length} rows · open one for the arithmetic` : "empty. the cleanest it will ever look.";
+  $("ledger").hidden = !rows.length;
+  $("ledger").innerHTML = rows.map(r => {
+    const k = r.t === "action" ? r.kind : r.t;
+    const w = r.t === "clock" ? `${nameOf(r.front)} → ${r.seg}` : r.t === "raid" ? `${nameOf(r.front)} took ${r.taken}` : (r.what || "");
+    const d = r.t === "action" ? (r.gain ? `+${r.gain}` : r.cost ? `−${r.cost}` : "") : r.t === "raid" ? `−${r.taken}` : "";
+    return `<div class="lrow ${esc(r.outcome || r.t)}" tabindex="0"><div class="l1"><span class="k">${esc(String(k).toUpperCase())}</span><span class="w">${esc(w)}</span><span class="d">${esc(d)}</span></div>${r.roll !== undefined ? `<div class="roll">${rollOf(r)}</div>` : ""}</div>`;
+  }).join("");
+  $("ledger").querySelectorAll(".lrow").forEach(r => { r.onclick = () => r.classList.toggle("open"); r.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); r.classList.toggle("open"); } }; });
+}
+
+// ---------------------------------------------------------------- the turn
+// Sealing is presentation. It folds the controls away until the world ticks again
+// (or you reopen them); the server has no seal rule and never refuses an order.
+const sealKey = () => `elsewhere-sealed-${SID}`;
+function sealedRecord() { try { return JSON.parse(store.get(sealKey(), "null")); } catch { return null; } }
+function renderTurn() {
+  const v = P.view, off = v.settled || P.expired;
+  const rec = sealedRecord();
+  const stillSealed = rec && rec.tick === v.tick && !off;
+  $("turn").hidden = off || stillSealed;
+  $("sealed").hidden = !(stillSealed || off);
+  if (off) {
+    $("sealed").querySelector("b").textContent = v.settled ? "THE WORLD HAS SETTLED" : "FREE PLAY USED";
+    $("sealedWhat").textContent = v.settled ? "No more watches. The chronicle is written." : "Your world is still running without you. Come back and watch it.";
+    $("reopen").hidden = !v.settled; $("reopen").textContent = v.settled ? "READ THE CHRONICLE" : "";
+    $("reopen").onclick = v.settled ? openEpi : null;
+    $("sealedPriced").innerHTML = "";
+    return;
+  }
+  $("sealed").querySelector("b").textContent = "SEALED";
+  $("reopen").hidden = false; $("reopen").textContent = "OPEN THE WATCH AGAIN";
+  $("reopen").onclick = () => { store.del(sealKey()); renderTurn(); };
+  if (stillSealed) { $("sealedWhat").innerHTML = rec.summary; $("sealedPriced").innerHTML = rec.priced || ""; return; }
+
+  // 1 · eyes
+  const watchId = v.watch.mode === "focused" ? (v.fronts.find(f => f.name === v.watch.name) || {}).id : v.watch.mode === "general" ? "general" : null;
+  if (pick.eyes === null || lastWatch !== watchId) pick.eyes = watchId;
+  $("tEyes").innerHTML = v.fronts.filter(f => !f.done).map(f => {
+    const m = f.memory || {}, held = f.id === watchId;
+    const hint = held ? "HELD" : f.sight === "band" ? "on the hill" : m.never_watched ? "never watched" : `${daysWord(m.dark_days)} dark`;
+    return `<button class="opt${pick.eyes === f.id ? " on" : ""}" data-eyes="${esc(f.id)}"><span class="l">${esc(f.name)}</span><span class="r">${held ? esc(hint) : `<i>${esc(hint)}</i>`}</span></button>`;
+  }).join("") + `<button class="opt${pick.eyes === "general" ? " on" : ""}" data-eyes="general"><span class="l">From the hill</span><span class="r">${watchId === "general" ? "HELD" : "<i>a rough read on all three</i>"}</span></button>`;
+  $("tEyes").querySelectorAll("[data-eyes]").forEach(b => b.onclick = () => { pick.eyes = b.dataset.eyes; if (pick.eyes !== "general") $("tTarget").value = pick.eyes; renderTurn(); });
+
+  // 2 · the order
+  const full = v.options.slots_left <= 0;
+  $("tOrderLab").textContent = full ? "2 · THE ORDER · QUEUE FULL" : `2 · THE ORDER · ${v.holding.coin} TO SPEND`;
+  $("tFull").hidden = !full;
+  $("tSay").disabled = full;
+  $("tSay").placeholder = full ? "The queue is full. Withdraw an order to say something new." : "Or say it yourself. Throw a feast. Send every worker somewhere they should not go.";
+  $("tFullGo").onclick = () => { $("queueSec").scrollIntoView({behavior: "smooth", block: "start"}); $("queue").querySelector(".x")?.focus(); };
+  const opts = ["disrupt", "scout", "trade", "fortify", "invest", "mega"].map(k => v.options.options.find(o => o.kind === k)).filter(Boolean);
+  $("tOrders").innerHTML = opts.map(o => `<button class="opt${o.kind === "mega" ? " mega" : ""}${pick.order === o.kind ? " on" : ""}" data-order="${o.kind}" ${!o.affordable || full ? "disabled" : ""} title="${!o.affordable ? "You cannot afford this." : full ? "The queue is full — withdraw an order first." : ""}">
+    <span class="l">${CAT[o.kind][0]}</span><span class="r">${o.kind === "mega" ? `ALL ${esc(o.cost)} · ${CAT.mega[1]}` : `${esc(o.cost)} · ${CAT[o.kind][1]}`}</span></button>`).join("")
+    || `<span class="note">Nothing affordable. Say something instead — a broke holding can still send people.</span>`;
+  $("tOrders").querySelectorAll("[data-order]").forEach(b => b.onclick = () => { pick.order = pick.order === b.dataset.order ? null : b.dataset.order; if (pick.order) $("tSay").value = ""; renderTurn(); });
+  const sel = $("tTarget"), keep = sel.value;
+  sel.innerHTML = v.fronts.filter(f => !f.done).map(f => `<option value="${esc(f.id)}">${esc(f.name)}</option>`).join("");
+  const eyeTarget = pick.eyes && pick.eyes !== "general" ? pick.eyes : null;
+  sel.value = (lastWatch !== watchId && eyeTarget) ? eyeTarget : (keep && [...sel.options].some(o => o.value === keep) ? keep : (eyeTarget || (sel.options[0] || {}).value));
+  $("tAtNote").textContent = sel.value === eyeTarget ? "· where your eyes are" : "";
+  sel.onchange = () => renderSealing();
+  lastWatch = watchId;
+
+  // 3 · how long
+  const times = [[8, "+8 hours", "one tick"], [24, "+1 day", "three ticks"], [0, "Leave it running", "the real game"]];
+  $("tTime").innerHTML = times.map(([h, l, r]) => `<button class="opt${h === 0 ? " lr" : ""}${pick.hours === h ? " on" : ""}" data-hours="${h}"><span class="l">${l}</span><span class="r"><i>${r}</i></span></button>`).join("");
+  $("tTime").querySelectorAll("[data-hours]").forEach(b => b.onclick = () => { pick.hours = +b.dataset.hours; renderTurn(); });
+  renderSealing();
+}
+function renderSealing() {
+  const text = $("tSay").value.trim(), eyesName = pick.eyes === "general" ? "all three, from the hill" : pick.eyes ? nameOf(pick.eyes) : "nobody yet";
+  const order = text ? `<span>say <b>“${esc(text.length > 48 ? text.slice(0, 48) + "…" : text)}”</b></span>`
+    : pick.order ? `<span>${esc(CAT[pick.order][0].toLowerCase())} <b>${esc(nameOf($("tTarget").value))}</b></span>` : `<span class="qt">no order given</span>`;
+  const time = pick.hours ? `<b>skip ${pick.hours === 8 ? "8 hours" : "a day"}</b>` : `<b>leave it running</b>`;
+  $("sealing").innerHTML = `<span class="lab sm">SEALING</span><span>eyes on <b>${esc(eyesName)}</b></span><span class="sep"> · </span>${order}<span class="sep"> · </span><span>then ${time}</span>`;
+}
+$("tSay").addEventListener("input", () => { if ($("tSay").value.trim() && pick.order) { pick.order = null; renderTurn(); } else renderSealing(); });
+$("tSay").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); seal(); } });
+$("sealBtn").onclick = () => seal();
+
+function pricedHTML(result) {
+  if (!result || !result.priced || !result.priced.length) return "";
+  const read = (result.read_as && result.read_as.orders) || [];
+  return result.priced.map((o, i) => {
+    const intent = read[i] || {};
+    const reading = [o.kind, intent.scale, (intent.aims || []).length ? "after " + intent.aims.join(", ") : "", o.perilous ? "perilous" : "", intent.beholden ? "generous" : ""].filter(Boolean).join(" · ");
+    const grants = (o.grants || []).map(g => `${g[0]} ${g[1]}`).join(", ") || "—";
+    const cost = o.kind === "mega" ? "the whole purse" : `${o.coin ?? o.cost ?? 0} coin${o.hands ? ` · ${o.hands} hands` : ""}`;
+    return `<dl class="priced"><dt>READ AS</dt><dd>${esc(reading)} → ${esc(nameOf(o.target))}</dd><dt>COSTS</dt><dd>${esc(cost)}</dd>
+      <dt>IF IT LANDS</dt><dd>${esc(grants)}${o.gain ? ` · up to ${esc(o.gain)} coin` : ""}</dd>
+      <span class="why">The server set every number from a fixed table. The dice decide whether any of it happens.${result.via === "fallback" ? " Read by the local heuristic — no model call." : ""}</span></dl>`;
+  }).join("");
+}
+
+async function withdraw(index) {
+  if (busy) return;
+  busy = true;
+  try { render(await api(`/api/session/${SID}/cancel`, {index})); toast("Order withdrawn. Nothing was spent."); }
+  catch (e) { if (e.data && e.data.view) render(e.data); toast(e.message); }
+  finally { busy = false; }
+}
+async function seal() {
+  if (busy || !P || P.view.settled || P.expired) return;
+  const v = P.view, text = $("tSay").value.trim();
+  if (pick.order === "mega" && !confirm("Stake the entire purse on one throw? It lands enormous, or it becomes something else entirely.")) return;
+  busy = true; $("sealBtn").disabled = true; $("sealBtn").textContent = "SEALING…";
+  let priced = "", summary = $("sealing").innerHTML.replace(/<span class="lab sm">SEALING<\/span>/, "");
+  try {
+    const watchId = v.watch.mode === "focused" ? (v.fronts.find(f => f.name === v.watch.name) || {}).id : v.watch.mode === "general" ? "general" : null;
+    let p = P;
+    if (pick.eyes && pick.eyes !== watchId) p = await api(`/api/session/${SID}/watch`, {target: pick.eyes});
+    if (text) { p = await api(`/api/session/${SID}/say`, {text}); priced = pricedHTML(p.result); ((p.result && p.result.results) || []).filter(r => r.error).forEach(r => toast(r.error)); }
+    else if (pick.order) p = await api(`/api/session/${SID}/order`, {kind: pick.order, target: $("tTarget").value});
+    if (pick.hours) {
+      P = p;
+      p = await api(`/api/session/${SID}/advance`, {hours: pick.hours});
+      const fresh = takeNew(p.view.ledger);
+      setChanges(fresh, `WHAT CHANGED IN THE ${pick.hours === 8 ? "LAST 8 HOURS" : "LAST DAY"}`) || setChanges([], "");
+    } else { takeNew(p.view.ledger); }
+    store.set(sealKey(), JSON.stringify({tick: p.view.tick, summary, priced}));
+    $("tSay").value = ""; pick.order = null; pick.hours = 0; pick.eyes = null;
+    render(p);
+  } catch (e) {
+    if (e.data && e.data.view) render(e.data);
+    toast(e.message);
+  } finally { busy = false; $("sealBtn").disabled = false; $("sealBtn").textContent = "SEAL THE WATCH"; }
+}
+
+// ---------------------------------------------------------------- header + render
+function renderHeader() {
+  const v = P.view;
+  $("holdName").textContent = v.holding.name.toUpperCase();
+  $("holdWhen").textContent = `day ${v.day} · ${v.world.watch_name} · ${v.world.clock}`;
+  $("seedPill").textContent = `SEED ${v.seed}`;
+  document.title = `${v.holding.name} — Elsewhere`;
+  const t = $("timePill");
+  if (P.unlimited) { t.textContent = "UNLIMITED"; t.className = "pill hot"; }
+  else if (P.expired) { t.textContent = "FREE PLAY USED"; t.className = "pill warn"; }
+  else { const m = Math.max(0, Math.ceil(P.minutes_left)); t.textContent = `${m} MIN OF PLAY`; t.className = "pill" + (m <= 5 ? " warn" : ""); }
+  t.title = "Free play is spent only while you are actually playing. Your world keeps running regardless.";
+  const a = $("aiPill");
+  if (P.ai_mode === "bedrock") { a.textContent = `NARRATOR ${(P.spend_usd * 100).toFixed(2)}¢`; a.title = `Bedrock · ${(P.spend_usd * 100).toFixed(2)}¢ of ${(P.budget_usd * 100).toFixed(0)}¢ on this world`; }
+  else { a.textContent = "NARRATOR · TEMPLATES"; a.title = "No AWS credentials on the server, so narration is templated. The engine decides everything either way."; }
+}
+function render(p) {
+  P = p;
+  renderHeader(); renderHorizon(); renderSpine(); renderChanges(); renderBriefing(); renderBoard(); renderTurn();
+  if (P.view.settled && !store.get(`elsewhere-epi-${SID}`)) { store.set(`elsewhere-epi-${SID}`, "1"); setTimeout(openEpi, 600); }
+}
+
+// ---------------------------------------------------------------- epilogue
+function openEpi() {
+  const s = P.view.score || {};
+  $("epiRank").textContent = s.rank || "SETTLED"; $("epiLine").textContent = s.line || "";
+  epiTab("story"); if (!$("epi").open) $("epi").showModal();
+  const total = +s.total || 0;
+  $("ringFill").style.strokeDasharray = "0 1000";
+  requestAnimationFrame(() => requestAnimationFrame(() => { $("ringFill").style.strokeDasharray = `${Math.round(Math.min(1, total / 1000) * 1000)} 1000`; }));
+  const t0 = performance.now(), step = (n) => { const pr = Math.min(1, (n - t0) / 2200); $("ringNum").textContent = Math.round(total * (1 - Math.pow(1 - pr, 3))); if (pr < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+function epiTab(t) {
+  const v = P.view, s = v.score || {};
+  document.querySelectorAll(".etab").forEach(b => b.classList.toggle("on", b.dataset.t === t));
+  if (t === "story") { $("ebody").innerHTML = esc(v.chronicle || "The chronicle is still being written.").split(/\n\s*\n/).map(p => `<p>${p}</p>`).join(""); return; }
+  const rows = [["days lived", s.lifespan], ["neighbours denied", `${s.held} of ${(s.held || 0) + (s.lost || 0)}`], ["endurance", s.endurance], ["stewardship", s.stewardship], ["execution", s.execution], ["defiance", s.defiance], ["plunder", s.plunder], ["losses", s.losses], ["vigilance", s.vigilance]];
+  $("ebody").innerHTML = `<div class="sline">${rows.map(([k, x]) => `<span>${esc(k)}</span><b>${esc(x ?? "—")}</b>`).join("")}<span style="color:var(--ember)">total</span><b style="color:var(--ember)">${esc(s.total)}</b></div>`;
+}
+document.querySelectorAll(".etab").forEach(b => b.onclick = () => epiTab(b.dataset.t));
+$("closeEpi").onclick = () => $("epi").close();
+$("againEpi").onclick = () => { $("epi").close(); newWorld(true); };
+$("epi").addEventListener("click", (e) => { if (e.target === $("epi")) $("epi").close(); });
+$("copyEpi").onclick = async () => {
+  const v = P.view, s = v.score || {};
+  try { await navigator.clipboard.writeText(`${v.holding.name} — Elsewhere, seed ${v.seed}. ${s.lifespan} days. ${s.held}/${(s.held || 0) + (s.lost || 0)} neighbours denied. Score ${s.total} — ${s.rank}.\n\n${v.chronicle || ""}`); toast("Copied."); }
+  catch { toast("Your browser blocked the clipboard."); }
+};
+
+// ---------------------------------------------------------------- column split + text size
+function setLeft(pct, save = true) {
+  pct = Math.max(35, Math.min(75, pct));
+  document.documentElement.style.setProperty("--left", pct + "%");
+  if (save) store.set("elsewhere-split2", String(pct));
+}
+setLeft(parseFloat(store.get("elsewhere-split2", "55.5")) || 55.5, false);
+$("gutter").addEventListener("pointerdown", (e) => {
+  const g = $("gutter"), rect = $("middle").getBoundingClientRect(), at = (ev) => ((ev.clientX - rect.left) / rect.width) * 100;
+  g.setPointerCapture(e.pointerId); g.classList.add("drag"); document.body.classList.add("dragging");
+  const mv = (ev) => setLeft(at(ev), false);
+  const up = (ev) => { g.releasePointerCapture(ev.pointerId); g.classList.remove("drag"); document.body.classList.remove("dragging"); setLeft(at(ev)); g.removeEventListener("pointermove", mv); g.removeEventListener("pointerup", up); };
+  g.addEventListener("pointermove", mv); g.addEventListener("pointerup", up);
+});
+$("gutter").addEventListener("dblclick", () => setLeft(55.5));
+$("gutter").addEventListener("keydown", (e) => {
+  const cur = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--left")) || 55.5;
+  if (e.key === "ArrowLeft") { e.preventDefault(); setLeft(cur - 2); } else if (e.key === "ArrowRight") { e.preventDefault(); setLeft(cur + 2); } else if (e.key === "Home") { e.preventDefault(); setLeft(55.5); }
+});
+let z = parseFloat(store.get("elsewhere-zoom", "1")) || 1;
+const applyZ = () => { document.documentElement.style.setProperty("--z", String(z)); store.set("elsewhere-zoom", String(z)); };
+$("fsUp").onclick = () => { z = Math.min(1.5, Math.round((z + 0.07) * 100) / 100); applyZ(); };
+$("fsDown").onclick = () => { z = Math.max(0.75, Math.round((z - 0.07) * 100) / 100); applyZ(); };
+applyZ();
+$("newWorld").onclick = () => newWorld(false);
+
+// ---------------------------------------------------------------- boot
+async function newWorld(skip) {
+  if (!skip && P && !P.view.settled && !confirm("Abandon this world and roll a new one? It keeps running, but you will not get back to it.")) return;
+  store.del("elsewhere-sid"); SID = null; prev = null; lastWatch = null; Object.assign(pick, {eyes: null, order: null, hours: 0});
+  await boot();
+}
+async function boot() {
+  try {
+    SID = store.get("elsewhere-sid");
+    if (SID) {
+      try {
+        const p = await api(`/api/session/${SID}`);
+        const fresh = takeNew(p.view.ledger);
+        if (fresh.length) setChanges(fresh, "WHAT CHANGED WHILE YOU WERE GONE");
+        render(p); return;
+      } catch (e) { if (e.status !== 404) throw e; store.del("elsewhere-sid"); }
+    }
+    const p = await api("/api/session", {});
+    SID = p.id; store.set("elsewhere-sid", SID); takeNew(p.view.ledger);
+    render(p);
+  } catch (e) { toast("Could not reach the world: " + e.message); }
+}
+async function refresh(path) {
+  if (document.visibilityState !== "visible" || !SID || busy) return;
+  try {
+    const p = await api(path, path.endsWith("/ping") ? {} : undefined);
+    const fresh = takeNew(p.view.ledger);
+    if (fresh.length) setChanges(fresh, "WHAT CHANGED WHILE YOU WERE GONE");
+    const composing = document.activeElement === $("tSay") && $("tSay").value;
+    if (composing) { P = p; renderHeader(); renderHorizon(); renderSpine(); renderChanges(); renderBoard(); }
+    else render(p);
+  } catch {}
+}
+// Heartbeat while visible: reading counts as play, and a tick that lands while you
+// happen to be looking shows up live. The countdown ring and spine redraw each minute.
+setInterval(() => refresh(`/api/session/${SID}/ping`), 45000);
+setInterval(() => { if (P && document.visibilityState === "visible") { renderHorizon(); renderSpine(); } }, 60000);
+document.addEventListener("visibilitychange", () => refresh(`/api/session/${SID}`));
+boot();
+})();
+</script>
+</body>
+</html>

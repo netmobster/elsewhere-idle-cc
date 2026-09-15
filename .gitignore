@@ -5,6 +5,10 @@ elsewhere-board.html
 epilogue.html
 worlds/
 
+# Web prototype: live session worlds and secrets
+.env
+web/sessions/
+
 # Test output
 sims/
 __pycache__/
