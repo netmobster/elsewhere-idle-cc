@@ -306,6 +306,14 @@ def freeform(sess: dict, text: str) -> dict:
     else:
         mapped = ai._heuristic_interpret(text, view)
         mapped["_meta"] = {"source": "budget-cap", "layer": "interpret", "usd": 0}
+    doctrine = (mapped.get("doctrine") or "").strip()
+    if doctrine and doctrine[:160] != (sess["state"].get("doctrine") or ""):
+        # What kind of holding they said they are. Standing character, not an
+        # order: it goes into every later briefing and reading, and the world
+        # remembers it as a fact the neighbours could have noticed.
+        sess["state"]["doctrine"] = doctrine[:160]
+        engine.add_fact(sess["state"], f"Word got out: the reach is {doctrine[:160]}.",
+                        "known", "you said it out loud")
     watch = mapped.get("watch")
     if watch:
         try:

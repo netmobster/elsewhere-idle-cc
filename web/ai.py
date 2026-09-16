@@ -132,14 +132,27 @@ def interpret(player_text: str, view: dict) -> dict:
         "You do not decide whether it works. You do not narrate. Output JSON only.\n"
         "You never set a price, a payout, or a duration. The server prices every "
         "order from a fixed table and ignores any number you include.\n"
-        "Schema: {\"watch\": null|\"general\"|faction-id, "
+        "Schema: {\"watch\": null|\"general\"|faction-id, \"doctrine\": null|str, "
         "\"orders\":[{\"kind\":\"disrupt|fortify|trade|scout|invest|mega|improvise\","
         "\"what\":str,\"target\":faction-id,"
         "\"scale\":\"small|normal|big|all_in\","
         "\"aims\":[\"disrupt|fortify|invest|trade|scout|hands|plunder\"],"
         "\"perilous\":bool,\"beholden\":bool,\"said\":str}]}\n"
-        "Rules: match a catalog kind when they clearly asked for one. Otherwise "
-        "kind=improvise. scale is ambition: small, normal, big, or all_in for "
+        "Rules: use a catalog kind ONLY when the sentence is bare — 'trade with the "
+        "diggers', 'scout the ridge'. The moment it carries a premise, an identity, a "
+        "method or a joke, it is kind=improvise, because improvise is the only kind "
+        "that keeps their words and prices their actual scheme. A pacifist society "
+        "that sells sketches is not a trade order.\n"
+        "`what` is the scheme in THEIR language, not a catalog label: 'sell sketches "
+        "door to door', never 'sell our wares'. `said` is their sentence verbatim — "
+        "never tidied, never paraphrased. It is what the narrator writes in.\n"
+        "beholden=true when the scheme is generous or flattering toward that "
+        "neighbour, not merely when it would work. Being in someone's debt is how a "
+        "player changes what a faction thinks of them for good.\n"
+        "If they declare what kind of holding they are — pacifists, sketch-sellers, "
+        "a death cult — put that in \"doctrine\" as a short phrase in their own words. "
+        "It is standing character, not an order, and it persists.\n"
+        "scale is ambition: small, normal, big, or all_in for "
         "everything they have. Use kind=mega instead if they stake the whole purse "
         "on one neighbour and coin>=150. aims are what they are trying to achieve, "
         "at most two; plunder means taking something portable. perilous means people "
@@ -175,14 +188,83 @@ def interpret(player_text: str, view: dict) -> dict:
     return data
 
 
+OUTCOME_WORDS = {
+    "ok": "it landed",
+    "partial": "it half-landed — some of it worked and the rest did not",
+    "refund": "it was called off before it happened; nothing was spent",
+    "misfire": "it went ahead into a situation that had stopped existing",
+}
+
+
+def _beats(rows: list[dict]) -> list[dict]:
+    """What happened, in words. The arithmetic is deliberately withheld.
+
+    The board shows every roll, drift and total beside the prose, in a drawer on
+    each row. A narrator holding those numbers recites them — that is what the
+    first version of this port did, and it read like a receipt. So the narrator
+    is handed outcomes as English and cannot repeat a number it was never given.
+    """
+    out = []
+    for e in rows:
+        row = {"t": e.get("t"), "at": e.get("at")}
+        if e.get("t") == "clock":
+            row["front"] = e.get("front")
+            row["moved"] = bool(e.get("gained"))
+            row["note"] = "they got further along whatever they are doing" if e.get("gained") else ""
+        else:
+            for k in ("what", "said", "target", "kind", "note"):
+                if e.get(k):
+                    row[k] = e[k]
+            row["outcome"] = OUTCOME_WORDS.get(e.get("outcome"), e.get("outcome") or "")
+        out.append(row)
+    return out
+
+
 def narrate(view: dict, skip_hours: int | None, first: bool) -> dict:
     system = (
-        "You are the Elsewhere narrator. You read a fog-safe ledger and tell the "
-        "player what it means. You never invent a number, a clock, or an outcome "
-        "that is not in the payload. Unwatched neighbours stay unknown — never "
-        "guess their bar. Close with one cliffhanger from the horizon list, "
-        "word for word in spirit. Match the player's register if `said` appears. "
-        "120-180 words. No markdown headings."
+        "You are the Elsewhere narrator. The engine already rolled; you are the only "
+        "one who can say what it MEANT. Narrate, never arbitrate.\n"
+        "Every beat needs three things: someone who did it, one physical specific you "
+        "invent, and what it changed. 'Landed' is not a beat. 'The zealots hung one "
+        "sketch by the barrow mouth and argued about the other until dark' is a beat, "
+        "and it is faithful to a partial.\n"
+        "NEVER state or restate arithmetic — no rolls, no dice, no totals, no drift, "
+        "no coin figures. The board already shows every number beside you, and "
+        "repeating it is the single worst thing you can do. You are given outcomes as "
+        "words for exactly this reason. The one exception: if an outcome genuinely "
+        "surprises you, say so in plain language — surprise is proof the dice are real.\n"
+        "Invent freely INSIDE an outcome; never invent the outcome. Nothing happened "
+        "that is not in the payload. Unwatched neighbours stay unknown — never guess "
+        "their progress, and phrase the not-knowing as the threat: 'nothing has come "
+        "back from the coast road in a week'.\n"
+        "If `doctrine` is set, the holding IS that thing, in every line, and the "
+        "neighbours have opinions about it. If `said` appears, write in that player's "
+        "register — wry gets wry, grim gets grim. Their words are as binding as the roll.\n"
+        "Open cold, on one thing that happened, in a short sentence. Never open by "
+        "summarising the day.\n"
+        "Do NOT tour the board. The player can see the fronts, the queue and the purse; "
+        "a briefing that lists all three neighbours and their clocks has said nothing. "
+        "Two or three beats at most, and only the ones that changed something.\n"
+        "Close on ONE cliffhanger — the single nearest thing coming — with its time "
+        "attached if the horizon gave you one, and never a time it did not. Choose the "
+        "one that should worry them most; drop the others entirely.\n"
+        "Never invent a time window. 'The next twelve hours will decide' is a "
+        "number you made up; if the horizon did not give you a clock, say the "
+        "not-knowing instead.\n"
+        "This is the register, from the version of this game people loved. Match "
+        "the specificity, not the words:\n"
+        "  A half-landed feast: 'a feast where the fiddler is drunk by the second "
+        "hour, two men fight over a coat, and most of the reach goes home alone "
+        "and early.'\n"
+        "  A scheme that worked on raiders: 'They laughed. Then they traded. You "
+        "came home richer than you left, which is not how duels normally conclude.'\n"
+        "  A failure: 'Somewhere between the reach and the barrow, a hand and a "
+        "statue did not arrive. The ledger records no reason. It is not going to "
+        "start now.'\n"
+        "  A consequence worth having: 'Iron Hand riders have been seen on the "
+        "coast road with Fen's Reach quilts over their saddles. You cannot burn a "
+        "waystation you buy your bedding from.'\n"
+        "140-200 words, plain prose. No markdown, no headings, no lists, no bullets."
     )
     user = json.dumps({
         "first": first,
@@ -193,7 +275,8 @@ def narrate(view: dict, skip_hours: int | None, first: bool) -> dict:
         "fronts": [{k: f[k] for k in
                     ("name", "style", "wants", "sight", "label", "watched")}
                    for f in view["fronts"]],
-        "ledger": view["ledger"][:14],
+        "doctrine": view.get("doctrine"),
+        "ledger": _beats(view["ledger"][:14]),
         "horizon": view["horizon"][:3],
         "queue": view["queue"],
     }, ensure_ascii=False)
