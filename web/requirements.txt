@@ -1,1 +1,4 @@
 boto3>=1.34.0
+# `aws login` mints credentials the CLI stores in a format botocore can only read
+# with its CRT extra. Without this, a machine signed in that way looks credential-less.
+botocore[crt]>=1.34.0
