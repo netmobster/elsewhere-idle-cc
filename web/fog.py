@@ -244,6 +244,7 @@ def view(s):
         "queue": queue,
         "effects": effects,
         "ledger": fog_ledger(s),
+        "doctrine": s.get("doctrine"),
         "facts": fog_facts(s),
         "horizon": horizon_safe(s) if s.get("status") != "settled" else [],
         "world": world_mode(s),
