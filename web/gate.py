@@ -119,7 +119,9 @@ document.getElementById('f').onsubmit = async e => {
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({ password: document.getElementById('p').value })
   });
-  if (r.ok) { location.href = '/'; return; }
+  // Reload wherever we are: the world may be mounted at / on its own host, or at
+  // a path like /elsewhere/play/ when it is served inside the studio site.
+  if (r.ok) { location.reload(); return; }
   document.getElementById('no').textContent = 'Not that one.';
   document.getElementById('p').value = '';
   document.getElementById('p').focus();
