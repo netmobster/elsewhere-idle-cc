@@ -61,7 +61,16 @@ def bedrock_ready() -> bool:
         return False
     if _client() is None:
         return False
-    # Credentials may exist even if sts was not tested here.
+    # Ask boto3 to resolve credentials however it likes: env vars, a profile, a
+    # credentials file, an instance role, or the short-lived ones `aws login` mints
+    # from a console session. Resolving is local and cheap; it calls nothing.
+    try:
+        import boto3
+
+        if boto3.Session().get_credentials() is not None:
+            return True
+    except Exception:
+        pass
     return bool(
         os.environ.get("AWS_ACCESS_KEY_ID")
         or os.environ.get("AWS_PROFILE")
